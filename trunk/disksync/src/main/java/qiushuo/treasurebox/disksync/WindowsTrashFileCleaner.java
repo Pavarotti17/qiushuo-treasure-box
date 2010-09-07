@@ -50,7 +50,9 @@ public class WindowsTrashFileCleaner {
 
     private static boolean validName(File f) {
         String name = f.getName();
-        if (name.contains("/")
+        if (name == null
+            || name.length() <= 0
+            || name.contains("/")
             || name.contains("\\")
             || name.contains(":")
             || name.contains("*")
