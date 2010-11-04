@@ -16,16 +16,41 @@ public class WindowsTrashFileCleaner {
     private static boolean delete = false;
 
     public static void main(String[] args) throws IOException {
-        if (args == null || args.length < 1) {
-            System.err.println("args[0]: p|d stand for print or delete");
-            System.exit(1);
-        }
-        delete = args[0].equalsIgnoreCase("d");
         BufferedReader sin = new BufferedReader(new InputStreamReader(System.in));
-        System.out.println("clean file/dir under this path:");
-        String rootPath = sin.readLine();
-        File root = new File(rootPath);
-        cleanDir(root);
+        while (true) {
+            System.out.print("\r\n>>");
+            String line = sin.readLine();
+            if (line == null || line.equalsIgnoreCase("exit") || line.equalsIgnoreCase("quit")) {
+                break;
+            } else if (line.length() == 0) {
+                printHelp();
+                continue;
+            }
+            line = line.trim();
+            int ind = line.indexOf(' ');
+            if (ind < 0) {
+                printHelp();
+                continue;
+            }
+            String cmd = line.substring(0, ind).trim();
+            String arg = line.substring(ind + 1);
+            if ("print".equalsIgnoreCase(cmd)) {
+                delete = false;
+                cleanDir(new File(arg));
+            } else if ("delete".equalsIgnoreCase(cmd)) {
+                delete = true;
+                cleanDir(new File(arg));
+            } else {
+                printHelp();
+                continue;
+            }
+        }
+    }
+
+    private static void printHelp() {
+        System.out.println("\t'print\t${path}' for print invalid files under ${path}");
+        System.out.println("\t'delete\t${path}' for delete invalid files under ${path}");
+        System.out.println("\t'exit' for quit");
     }
 
     private static void cleanDir(File dir) {
@@ -33,18 +58,18 @@ public class WindowsTrashFileCleaner {
         if (fs == null || fs.length <= 0) return;
         for (File f : fs) {
             if (!validName(f)) {
-                deleteFileDir(f);
+                dealDirFile(f);
             } else if (f.isDirectory()) {
                 cleanDir(f);
             }
         }
     }
 
-    private static void deleteFileDir(File f) {
+    private static void dealDirFile(File f) {
         if (!delete) {
             System.out.println(f.getAbsolutePath());
         } else {
-            deleteQuietly(f);
+            dealQuietly(f);
         }
     }
 
@@ -66,7 +91,7 @@ public class WindowsTrashFileCleaner {
         return true;
     }
 
-    private static boolean deleteQuietly(File file) {
+    private static boolean dealQuietly(File file) {
         if (file == null) {
             return false;
         }
@@ -141,5 +166,4 @@ public class WindowsTrashFileCleaner {
             }
         }
     }
-
 }
