@@ -1,12 +1,14 @@
 package qiushuo.treasurebox.disksync;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * (created at 2010-11-4)
@@ -14,8 +16,21 @@ import java.io.InputStreamReader;
  * @author <a href="mailto:QiuShuo1985@gmail.com">QIU Shuo</a>
  */
 public class DirCopy {
+    private static SimpleDateFormat df = new SimpleDateFormat("[yyyy-MM-dd,HH:mm:ss] ");
+
+    private static void log(String msg) {
+        System.out.println(new StringBuilder().append(df.format(new Date())).append(msg));
+    }
+
     public static void main(String[] args) throws Exception {
-        DirCopy copier = new DirCopy();
+        int size = 16;
+        try {
+            size = Integer.parseInt(args[0].trim());
+        } catch (Exception e) {
+            System.out.println("args[0] is buffer size in MByte, default " + size);
+        }
+        System.out.println("bufferSize " + size + " MByte");
+        DirCopy copier = new DirCopy(1024 * 1024 * size);
         BufferedReader sin = new BufferedReader(new InputStreamReader(System.in));
         System.out.print("source dir or file path:");
         String fromFilePath = sin.readLine().trim();
@@ -24,19 +39,26 @@ public class DirCopy {
         copier.copyDirFile(new File(fromFilePath), new File(toRootPath));
     }
 
+    public DirCopy(int bufferSize) {
+        super();
+        buffer = new byte[bufferSize];
+    }
+
+    private byte[] buffer;
+
     /**
      * @param toDir toDirPath/fromDirName
      */
     private void copyDirFile(File fromFile, File toRoot) {
         if (fromFile.isFile()) {
             File toFile = copyFile(fromFile, toRoot);
-            System.out.println(toFile.getAbsolutePath());
+            log(toFile.getAbsolutePath());
         } else {
             File toDir = new File(toRoot, fromFile.getName());
             if (!toDir.exists()) {
                 toDir.mkdirs();
             }
-            System.out.println(toDir.getAbsolutePath() + File.separator);
+            log(toDir.getAbsolutePath() + File.separator);
             File[] underFrom = fromFile.listFiles();
             if (underFrom != null) {
                 for (File eachUnderFrom : underFrom) {
@@ -48,15 +70,13 @@ public class DirCopy {
 
     private File copyFile(File fromFile, File toDir) {
         File toFile = new File(toDir, fromFile.getName());
-        BufferedInputStream fin = null;
-        BufferedOutputStream fout = null;
+        InputStream fin = null;
+        OutputStream fout = null;
         try {
-            fin = new BufferedInputStream(new FileInputStream(fromFile), 1024 * 1024 * 16);
-            fout = new BufferedOutputStream(new FileOutputStream(toFile), 1024 * 1024 * 16);
-            while (true) {
-                int b = fin.read();
-                if (b == -1) break;
-                fout.write(b);
+            fin = new FileInputStream(fromFile);
+            fout = new FileOutputStream(toFile);
+            for (int b = 0; (b = fin.read(buffer)) >= 0;) {
+                fout.write(buffer, 0, b);
             }
             return toFile;
         } catch (Exception e) {
@@ -79,5 +99,4 @@ public class DirCopy {
             }
         }
     }
-
 }
