@@ -22,8 +22,12 @@ public class DirCopy {
         System.out.println(new StringBuilder().append(df.format(new Date())).append(msg));
     }
 
+    private static void err(String msg) {
+        System.err.println(new StringBuilder().append(df.format(new Date())).append(msg));
+    }
+
     public static void main(String[] args) throws Exception {
-        int size = 16;
+        int size = 32;
         try {
             size = Integer.parseInt(args[0].trim());
         } catch (Exception e) {
@@ -52,7 +56,7 @@ public class DirCopy {
     private void copyDirFile(File fromFile, File toRoot) {
         if (fromFile.isFile()) {
             File toFile = copyFile(fromFile, toRoot);
-            log(toFile.getAbsolutePath());
+            if (toFile != null) log(toFile.getAbsolutePath());
         } else {
             File toDir = new File(toRoot, fromFile.getName());
             if (!toDir.exists()) {
@@ -76,14 +80,11 @@ public class DirCopy {
             fin = new FileInputStream(fromFile);
             fout = new FileOutputStream(toFile);
             for (int b = 0; (b = fin.read(buffer)) >= 0;) {
-                fout.write(buffer, 0, b);
+                if (b > 0) fout.write(buffer, 0, b);
             }
-            return toFile;
         } catch (Exception e) {
-            throw new RuntimeException("fromFile:"
-                                       + fromFile.getAbsolutePath()
-                                       + "; toFile:"
-                                       + toFile.getAbsolutePath(), e);
+            err("fromFile:" + fromFile.getAbsolutePath() + "; toFile:" + toFile.getAbsolutePath() + ". exception: " + e);
+            return null;
         } finally {
             try {
                 fin.close();
@@ -97,6 +98,16 @@ public class DirCopy {
                 fout.close();
             } catch (Exception e2) {
             }
+        }
+        checkSameContent(fromFile, toFile);
+        return toFile;
+    }
+
+    private void checkSameContent(File fromFile, File toFile) {
+        long sizeFrom = fromFile.length();
+        long sizeTo = toFile.length();
+        if (sizeFrom != sizeTo) {
+            err("size not equal: from=" + fromFile.getAbsolutePath() + ", to=" + toFile.getAbsolutePath());
         }
     }
 }
