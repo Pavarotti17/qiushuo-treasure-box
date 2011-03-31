@@ -36,7 +36,7 @@ public class Vote {
             out.print("Content-Type: application/x-www-form-urlencoded\r\n");
             out.print("Connection: close\r\n");
             out.print("Content-Length: 44\r\n\r\n");
-            out.print("PjtID=939849&result=0&sbj_969851%5B%5D=72655\r\n\r\n");
+            out.print("PjtID=939849&result=0&sbj_969851%5B%5D=72655");
             out.flush();
             for (String line = null; (line = in.readLine()) != null;) {
                 if (line.trim().length() < 0) break;
