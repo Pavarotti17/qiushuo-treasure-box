@@ -34,6 +34,7 @@ public class Vote {
             out.print("Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7\r\n");
             out.print("Referer: http://page.vote.qq.com/?id=939849&result=yes\r\n");
             out.print("Content-Type: application/x-www-form-urlencoded\r\n");
+            out.print("Connection: close\r\n");
             out.print("Content-Length: 44\r\n\r\n");
             out.print("PjtID=939849&result=0&sbj_969851%5B%5D=72655\r\n\r\n");
             out.flush();
