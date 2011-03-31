@@ -39,8 +39,8 @@ public class Vote {
             out.print("PjtID=939849&result=0&sbj_969851%5B%5D=72655");
             out.flush();
             for (String line = null; (line = in.readLine()) != null;) {
-                if (line.trim().length() < 0) break;
                 System.out.println(line);
+                if (line.trim().length() < 0) break;
             }
         } finally {
             try {
@@ -56,19 +56,20 @@ public class Vote {
             } catch (Exception e) {
             }
         }
-
     }
 
-    public static void main(String[] args) {
-        try {
-            Vote v = new Vote();
-            for (int i = 0; i < Integer.MAX_VALUE; i++) {
+    public static void main(String[] args) throws InterruptedException {
+        System.out.println("==============");
+        Vote v = new Vote();
+        for (int i = 1; i < Integer.MAX_VALUE; ++i) {
+            try {
                 v.vote();
                 System.out.println("i=" + i);
-                Thread.sleep(10000);
+                Thread.sleep(10001);
+            } catch (Exception e) {
+                e.printStackTrace();
+                Thread.sleep(2000);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
