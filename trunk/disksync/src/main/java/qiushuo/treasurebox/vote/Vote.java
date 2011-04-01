@@ -7,7 +7,10 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
@@ -17,15 +20,44 @@ public class Vote {
     public Vote() {
     }
 
+    private static class WriteThread extends Thread {
+        private Socket so;
+        private CountDownLatch count = new CountDownLatch(1);
+
+        public WriteThread(Socket so) {
+            super();
+            this.so = so;
+        }
+
+        public void shutdown() {
+            count.countDown();
+        }
+
+        @Override
+        public void run() {
+            try {
+                if (!count.await(10, TimeUnit.SECONDS)) {
+                    so.close();
+                    System.out.println("wirte for too long time");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private void vote() throws Exception {
         Socket s = null;
         PrintWriter out = null;
         BufferedReader in = null;
         try {
-            s = new Socket("input.vote.qq.com", 80);
+            s = new Socket();
+            s.connect(new InetSocketAddress("input.vote.qq.com", 80), 20000);
             s.setSoTimeout(30 * 1000);
             out = new PrintWriter(new OutputStreamWriter(s.getOutputStream()));
             in = new BufferedReader(new InputStreamReader(s.getInputStream(), "GBK"));
+            WriteThread t = new WriteThread(s);
+            t.start();
             out.print("POST /survey.php HTTP/1.1\r\n");
             out.print("Host: input.vote.qq.com\r\n");
             out.print("User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.16) Gecko/20110319 Firefox/3.6.16\r\n");
@@ -39,6 +71,7 @@ public class Vote {
             out.print("Content-Length: 44\r\n\r\n");
             out.print("PjtID=939849&result=0&sbj_969851%5B%5D=72655");
             out.flush();
+            t.shutdown();
             for (String line = null; (line = in.readLine()) != null;) {
                 System.out.println(line);
                 if (line.trim().length() < 0) break;
