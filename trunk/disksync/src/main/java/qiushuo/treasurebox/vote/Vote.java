@@ -9,6 +9,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -98,7 +100,7 @@ public class Vote {
         for (int i = 1; i < Integer.MAX_VALUE; ++i) {
             try {
                 v.vote();
-                System.out.println("i=" + i);
+                System.out.println("i=" + i + ", " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
                 Thread.sleep(10001);
             } catch (Exception e) {
                 e.printStackTrace();
