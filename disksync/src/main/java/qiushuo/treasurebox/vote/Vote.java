@@ -23,6 +23,7 @@ public class Vote {
         BufferedReader in = null;
         try {
             s = new Socket("input.vote.qq.com", 80);
+            s.setSoTimeout(30 * 1000);
             out = new PrintWriter(new OutputStreamWriter(s.getOutputStream()));
             in = new BufferedReader(new InputStreamReader(s.getInputStream(), "GBK"));
             out.print("POST /survey.php HTTP/1.1\r\n");
