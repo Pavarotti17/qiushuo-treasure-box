@@ -4,9 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -27,7 +25,7 @@ public class DirCopy {
     }
 
     public static void main(String[] args) throws Exception {
-        int size = 32;
+        int size = 128;
         try {
             size = Integer.parseInt(args[0].trim());
         } catch (Exception e) {
@@ -74,13 +72,16 @@ public class DirCopy {
 
     private File copyFile(File fromFile, File toDir) {
         File toFile = new File(toDir, fromFile.getName());
-        InputStream fin = null;
-        OutputStream fout = null;
+        FileInputStream fin = null;
+        FileOutputStream fout = null;
         try {
             fin = new FileInputStream(fromFile);
             fout = new FileOutputStream(toFile);
             for (int b = 0; (b = fin.read(buffer)) >= 0;) {
-                if (b > 0) fout.write(buffer, 0, b);
+                if (b > 0) {
+                    //System.out.println(b);
+                    fout.write(buffer, 0, b);
+                }
             }
         } catch (Exception e) {
             err("fromFile:" + fromFile.getAbsolutePath() + "; toFile:" + toFile.getAbsolutePath() + ". exception: " + e);
