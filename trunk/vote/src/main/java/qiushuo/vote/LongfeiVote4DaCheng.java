@@ -151,7 +151,7 @@ public class LongfeiVote4DaCheng {
             try {
                 s = new Socket();
                 s.connect(new InetSocketAddress(ip, port), 40000);
-                s.setSoTimeout(30 * 1000);
+                s.setSoTimeout(60 * 1000);
                 out = new PrintWriter(new OutputStreamWriter(s.getOutputStream()));
                 in = new BufferedReader(new InputStreamReader(s.getInputStream(), "GBK"));
                 WriteThread t = new WriteThread(s);
@@ -167,7 +167,7 @@ public class LongfeiVote4DaCheng {
                 out.print("Content-Type: application/x-www-form-urlencoded\r\n");
                 out.print("Connection: close\r\n");
                 out.print("Content-Length: 44\r\n\r\n");
-                out.print("PjtID=939849&result=0&sbj_969851%5B%5D=72655\r\n");
+                out.print("PjtID=939849&result=0&sbj_969851%5B%5D=72655");
                 out.flush();
                 t.shutdown();
                 for (String line = null; (line = in.readLine()) != null;) {
