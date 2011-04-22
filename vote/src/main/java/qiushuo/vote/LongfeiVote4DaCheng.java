@@ -19,33 +19,35 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
  */
 public class LongfeiVote4DaCheng {
-    private static class Pair<K, V> {
-        K succ;
-        V err;
+    private static class Info {
+        AtomicInteger succ;
+        AtomicInteger err;
+        AtomicBoolean processing = new AtomicBoolean(false);
 
-        public Pair(K succ, V err) {
+        public Info(AtomicInteger succ, AtomicInteger err) {
             super();
             this.succ = succ;
             this.err = err;
         }
     }
 
-    private ConcurrentHashMap<String, Pair<AtomicInteger, AtomicInteger>> proxys =
-            new ConcurrentHashMap<String, Pair<AtomicInteger, AtomicInteger>>();
+    private ConcurrentHashMap<String, Info> proxys = new ConcurrentHashMap<String, Info>();
     private AtomicInteger count = new AtomicInteger(0);
     private ExecutorService pool = Executors.newCachedThreadPool();
 
     private void vote() throws Exception {
         for (;;) {
             for (String ipport : proxys.keySet()) {
-                Pair<AtomicInteger, AtomicInteger> p = proxys.get(ipport);
+                Info p = proxys.get(ipport);
                 if (p == null || p.err == null || p.err.get() <= 0) continue;
+                if (!p.processing.compareAndSet(false, true)) continue;
                 Voter v = new Voter(getIp(ipport), getPort(ipport));
                 pool.execute(v);
             }
@@ -67,9 +69,7 @@ public class LongfeiVote4DaCheng {
                 if (!line.contains(":")) {
                     continue;
                 }
-                proxys.putIfAbsent(line, new Pair<AtomicInteger, AtomicInteger>(
-                        new AtomicInteger(0),
-                        new AtomicInteger(6)));
+                proxys.putIfAbsent(line, new Info(new AtomicInteger(0), new AtomicInteger(6)));
             }
             System.out.println(proxys);
         } catch (Exception e) {
@@ -99,7 +99,7 @@ public class LongfeiVote4DaCheng {
     }
 
     private void proxyErr(String ipPort) {
-        Pair<AtomicInteger, AtomicInteger> p = proxys.get(ipPort);
+        Info p = proxys.get(ipPort);
         if (p == null || p.err == null) return;
         if (p.err.decrementAndGet() <= 0) {
             proxys.remove(ipPort);
@@ -151,7 +151,7 @@ public class LongfeiVote4DaCheng {
             try {
                 s = new Socket();
                 s.connect(new InetSocketAddress(ip, port), 40000);
-                s.setSoTimeout(60 * 1000);
+                s.setSoTimeout(30 * 1000);
                 out = new PrintWriter(new OutputStreamWriter(s.getOutputStream()));
                 in = new BufferedReader(new InputStreamReader(s.getInputStream(), "GBK"));
                 WriteThread t = new WriteThread(s);
@@ -167,13 +167,13 @@ public class LongfeiVote4DaCheng {
                 out.print("Content-Type: application/x-www-form-urlencoded\r\n");
                 out.print("Connection: close\r\n");
                 out.print("Content-Length: 44\r\n\r\n");
-                out.print("PjtID=939849&result=0&sbj_969851%5B%5D=72655");
+                out.print("PjtID=939849&result=0&sbj_969851%5B%5D=72655\r\n");
                 out.flush();
                 t.shutdown();
                 for (String line = null; (line = in.readLine()) != null;) {
                     if (line.contains("提交成功")) {
                         StringBuilder sb = new StringBuilder(ip).append(':').append(port);
-                        Pair<AtomicInteger, AtomicInteger> p = proxys.get(ip + ":" + port);
+                        Info p = proxys.get(ip + ":" + port);
                         if (p != null) {
                             Integer succ = p.succ == null ? null : p.succ.incrementAndGet();
                             Integer err = p.err == null ? null : p.err.get();
@@ -194,6 +194,8 @@ public class LongfeiVote4DaCheng {
                 System.err.println(e);
                 proxyErr(ip + ":" + port);
             } finally {
+                Info p = proxys.get(ip + ":" + port);
+                p.processing.set(false);
                 try {
                     out.close();
                 } catch (Exception e) {
