@@ -6,9 +6,11 @@ package qiushuo.vote;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -23,16 +25,27 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
  */
 public class LongfeiVote4DaCheng {
+    private static class Pair<K, V> {
+        K succ;
+        V err;
 
-    private ConcurrentHashMap<String, AtomicInteger> proxys = new ConcurrentHashMap<String, AtomicInteger>();
+        public Pair(K succ, V err) {
+            super();
+            this.succ = succ;
+            this.err = err;
+        }
+    }
+
+    private ConcurrentHashMap<String, Pair<AtomicInteger, AtomicInteger>> proxys =
+            new ConcurrentHashMap<String, Pair<AtomicInteger, AtomicInteger>>();
     private AtomicInteger count = new AtomicInteger(0);
     private ExecutorService pool = Executors.newCachedThreadPool();
 
     private void vote() throws Exception {
         for (;;) {
             for (String ipport : proxys.keySet()) {
-                AtomicInteger time = proxys.get(ipport);
-                if (time == null || time.get() <= 0) continue;
+                Pair<AtomicInteger, AtomicInteger> p = proxys.get(ipport);
+                if (p == null || p.err == null || p.err.get() <= 0) continue;
                 Voter v = new Voter(getIp(ipport), getPort(ipport));
                 pool.execute(v);
             }
@@ -54,7 +67,9 @@ public class LongfeiVote4DaCheng {
                 if (!line.contains(":")) {
                     continue;
                 }
-                proxys.putIfAbsent(line, new AtomicInteger(20));
+                proxys.putIfAbsent(line, new Pair<AtomicInteger, AtomicInteger>(
+                        new AtomicInteger(0),
+                        new AtomicInteger(6)));
             }
             System.out.println(proxys);
         } catch (Exception e) {
@@ -84,12 +99,11 @@ public class LongfeiVote4DaCheng {
     }
 
     private void proxyErr(String ipPort) {
-        AtomicInteger time = proxys.get(ipPort);
-        if (time != null) {
-            if (time.decrementAndGet() <= 0) {
-                proxys.remove(ipPort);
-                System.out.println("### ipport removed: " + ipPort);
-            }
+        Pair<AtomicInteger, AtomicInteger> p = proxys.get(ipPort);
+        if (p == null || p.err == null) return;
+        if (p.err.decrementAndGet() <= 0) {
+            proxys.remove(ipPort);
+            System.out.println("### ipport removed: " + ipPort);
         }
     }
 
@@ -120,7 +134,6 @@ public class LongfeiVote4DaCheng {
     }
 
     private class Voter implements Runnable {
-
         private String ip;
         private int port;
 
@@ -159,12 +172,21 @@ public class LongfeiVote4DaCheng {
                 t.shutdown();
                 for (String line = null; (line = in.readLine()) != null;) {
                     if (line.contains("提交成功")) {
+                        StringBuilder sb = new StringBuilder(ip).append(':').append(port);
+                        Pair<AtomicInteger, AtomicInteger> p = proxys.get(ip + ":" + port);
+                        if (p != null) {
+                            Integer succ = p.succ == null ? null : p.succ.get();
+                            Integer err = p.err == null ? null : p.err.get();
+                            sb.append(", succ=").append(succ).append(", err=").append(err);
+                        }
                         System.out.println("succ="
                                            + count.incrementAndGet()
                                            + " "
                                            + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
                                            + ", proxy="
-                                           + proxys.size());
+                                           + proxys.size()
+                                           + ", "
+                                           + sb.toString());
                         break;
                     }
                 }
@@ -189,7 +211,9 @@ public class LongfeiVote4DaCheng {
     }
 
     public static void main(String[] args) throws Exception {
-        System.out.println("=============v5.1===");
+        System.out.println("=============v602========");
+        final ServerSocket manager = new ServerSocket();
+        System.out.println("manage port: " + manager.getLocalPort());
         final LongfeiVote4DaCheng v = new LongfeiVote4DaCheng();
         v.reloadProxys();
 
@@ -203,6 +227,31 @@ public class LongfeiVote4DaCheng {
                         e.printStackTrace();
                     }
                     v.reloadProxys();
+                }
+            }
+        }.start();
+
+        //manual reload
+        new Thread() {
+            @Override
+            public void run() {
+                for (;;) {
+                    Socket s = null;
+                    try {
+                        s = manager.accept();
+                        OutputStream out = s.getOutputStream();
+                        out.write("start reload..\r\n".getBytes());
+                        out.flush();
+                        out.close();
+                        v.reloadProxys();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        try {
+                            s.close();
+                        } catch (Exception e2) {
+                        }
+                    }
                 }
             }
         }.start();
