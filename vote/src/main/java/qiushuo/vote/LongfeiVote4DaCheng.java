@@ -38,9 +38,9 @@ public class LongfeiVote4DaCheng {
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            sb.append("(succ=")
+            sb.append("(successCount=")
               .append(succ.get())
-              .append(", err=")
+              .append(", errorLeft=")
               .append(err.get())
               .append(", proc=")
               .append(processing.get())
@@ -51,6 +51,7 @@ public class LongfeiVote4DaCheng {
 
     private ConcurrentHashMap<String, Info> proxys = new ConcurrentHashMap<String, Info>();
     private AtomicInteger count = new AtomicInteger(0);
+    private AtomicInteger countd = new AtomicInteger(0);
     private ExecutorService pool = Executors.newCachedThreadPool();
 
     private void vote() throws Exception {
@@ -65,7 +66,8 @@ public class LongfeiVote4DaCheng {
                 Voter v = new Voter(getIp(ipport), getPort(ipport));
                 pool.execute(v);
             }
-            Thread.sleep(11 * 1000);
+            Thread.sleep((5 * 60 + 7) * 1000);
+            //  Thread.sleep(11 * 1000);
         }
     }
 
@@ -166,9 +168,9 @@ public class LongfeiVote4DaCheng {
             long start = System.currentTimeMillis();
             try {
                 s = new Socket();
-                s.connect(new InetSocketAddress(ip, port), 40000);
+                s.connect(new InetSocketAddress(ip, port), 60000);
                 conn = -(start - (start = System.currentTimeMillis()));
-                s.setSoTimeout(60 * 1000);
+                s.setSoTimeout(80 * 1000);
                 out = new PrintWriter(new OutputStreamWriter(s.getOutputStream()));
                 in = new BufferedReader(new InputStreamReader(s.getInputStream(), "GBK"));
                 WriteThread t = new WriteThread(s);
@@ -201,6 +203,32 @@ public class LongfeiVote4DaCheng {
                         read = -(start - (start = System.currentTimeMillis()));
                         System.out.println("succ="
                                            + count.incrementAndGet()
+                                           + " "
+                                           + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
+                                           + ", proxy="
+                                           + proxys.size()
+                                           + ", "
+                                           + sb.toString()
+                                           + ", resp=("
+                                           + conn
+                                           + ", "
+                                           + write
+                                           + ", "
+                                           + read
+                                           + ")ms");
+                        break;
+                    } else if (line.contains("提交过了")) {
+                        StringBuilder sb = new StringBuilder(ip).append(':').append(port);
+                        Info p = proxys.get(ip + ":" + port);
+                        if (p != null) {
+                            Integer succ = p.succ == null ? null : p.succ.incrementAndGet();
+                            Integer err = p.err == null ? null : p.err.get();
+                            sb.append(", succ=").append(succ).append(", errLeft=").append(err);
+                            p.restoreErr();
+                        }
+                        read = -(start - (start = System.currentTimeMillis()));
+                        System.out.println("duplicate="
+                                           + countd.incrementAndGet()
                                            + " "
                                            + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
                                            + ", proxy="
