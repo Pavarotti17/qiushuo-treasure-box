@@ -212,7 +212,7 @@ public class LongfeiVote4DaCheng {
 
     public static void main(String[] args) throws Exception {
         System.out.println("=============v602========");
-        final ServerSocket manager = new ServerSocket();
+        final ServerSocket manager = new ServerSocket(0);
         System.out.println("manage port: " + manager.getLocalPort());
         final LongfeiVote4DaCheng v = new LongfeiVote4DaCheng();
         v.reloadProxys();
