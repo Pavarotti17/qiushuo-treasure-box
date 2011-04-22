@@ -27,14 +27,25 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class LongfeiVote4DaCheng {
     private static class Info {
-        AtomicInteger succ;
-        AtomicInteger err;
-        AtomicBoolean processing = new AtomicBoolean(false);
+        final AtomicInteger succ = new AtomicInteger(0);
+        final AtomicInteger err = new AtomicInteger(3);
+        final AtomicBoolean processing = new AtomicBoolean(false);
 
-        public Info(AtomicInteger succ, AtomicInteger err) {
-            super();
-            this.succ = succ;
-            this.err = err;
+        void restoreErr() {
+            err.set(3);
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("(succ=")
+              .append(succ.get())
+              .append(", err=")
+              .append(err.get())
+              .append(", proc=")
+              .append(processing.get())
+              .append(")");
+            return sb.toString();
         }
     }
 
@@ -47,7 +58,10 @@ public class LongfeiVote4DaCheng {
             for (String ipport : proxys.keySet()) {
                 Info p = proxys.get(ipport);
                 if (p == null || p.err == null || p.err.get() <= 0) continue;
-                if (!p.processing.compareAndSet(false, true)) continue;
+                if (!p.processing.compareAndSet(false, true)) {
+                    System.err.println("# conflict, " + ipport);
+                    continue;
+                }
                 Voter v = new Voter(getIp(ipport), getPort(ipport));
                 pool.execute(v);
             }
@@ -69,7 +83,7 @@ public class LongfeiVote4DaCheng {
                 if (!line.contains(":")) {
                     continue;
                 }
-                proxys.putIfAbsent(line, new Info(new AtomicInteger(0), new AtomicInteger(6)));
+                proxys.putIfAbsent(line, new Info());
             }
             System.out.println(proxys);
         } catch (Exception e) {
@@ -148,9 +162,12 @@ public class LongfeiVote4DaCheng {
             Socket s = null;
             PrintWriter out = null;
             BufferedReader in = null;
+            long conn = 0, write = 0, read = 0;
+            long start = System.currentTimeMillis();
             try {
                 s = new Socket();
                 s.connect(new InetSocketAddress(ip, port), 40000);
+                conn = -(start - (start = System.currentTimeMillis()));
                 s.setSoTimeout(60 * 1000);
                 out = new PrintWriter(new OutputStreamWriter(s.getOutputStream()));
                 in = new BufferedReader(new InputStreamReader(s.getInputStream(), "GBK"));
@@ -170,6 +187,7 @@ public class LongfeiVote4DaCheng {
                 out.print("PjtID=939849&result=0&sbj_969851%5B%5D=72655");
                 out.flush();
                 t.shutdown();
+                write = -(start - (start = System.currentTimeMillis()));
                 for (String line = null; (line = in.readLine()) != null;) {
                     if (line.contains("提交成功")) {
                         StringBuilder sb = new StringBuilder(ip).append(':').append(port);
@@ -178,7 +196,9 @@ public class LongfeiVote4DaCheng {
                             Integer succ = p.succ == null ? null : p.succ.incrementAndGet();
                             Integer err = p.err == null ? null : p.err.get();
                             sb.append(", succ=").append(succ).append(", errLeft=").append(err);
+                            p.restoreErr();
                         }
+                        read = -(start - (start = System.currentTimeMillis()));
                         System.out.println("succ="
                                            + count.incrementAndGet()
                                            + " "
@@ -186,16 +206,23 @@ public class LongfeiVote4DaCheng {
                                            + ", proxy="
                                            + proxys.size()
                                            + ", "
-                                           + sb.toString());
+                                           + sb.toString()
+                                           + ", resp=("
+                                           + conn
+                                           + ", "
+                                           + write
+                                           + ", "
+                                           + read
+                                           + ")ms");
                         break;
                     }
                 }
             } catch (Exception e) {
-                System.err.println(e);
+                System.err.println(e.toString() + ", proxys=" + proxys.size());
                 proxyErr(ip + ":" + port);
             } finally {
                 Info p = proxys.get(ip + ":" + port);
-                p.processing.set(false);
+                if (p != null) p.processing.set(false);
                 try {
                     out.close();
                 } catch (Exception e) {
