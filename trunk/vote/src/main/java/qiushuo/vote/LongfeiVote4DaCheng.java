@@ -175,9 +175,9 @@ public class LongfeiVote4DaCheng {
                         StringBuilder sb = new StringBuilder(ip).append(':').append(port);
                         Pair<AtomicInteger, AtomicInteger> p = proxys.get(ip + ":" + port);
                         if (p != null) {
-                            Integer succ = p.succ == null ? null : p.succ.get();
+                            Integer succ = p.succ == null ? null : p.succ.incrementAndGet();
                             Integer err = p.err == null ? null : p.err.get();
-                            sb.append(", succ=").append(succ).append(", err=").append(err);
+                            sb.append(", succ=").append(succ).append(", errLeft=").append(err);
                         }
                         System.out.println("succ="
                                            + count.incrementAndGet()
