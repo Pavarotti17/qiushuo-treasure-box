@@ -13,25 +13,36 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
  */
 public class LongfeiVote4DaCheng {
+    private static final long VOTE_INTERVAL = 5 * 60 * 1000;
+    private static final long PRODUCE_INTERVAL = 37 * 1000;
+
     private static class Info {
         final AtomicInteger succ = new AtomicInteger(0);
         final AtomicInteger err = new AtomicInteger(3);
         final AtomicBoolean processing = new AtomicBoolean(false);
+        final AtomicLong lastProcess = new AtomicLong(System.currentTimeMillis() - VOTE_INTERVAL - 1000);
 
-        void restoreErr() {
+        public void restoreErr() {
             err.set(3);
         }
 
@@ -44,6 +55,8 @@ public class LongfeiVote4DaCheng {
               .append(err.get())
               .append(", proc=")
               .append(processing.get())
+              .append(", lastTime=")
+              .append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(lastProcess.get())))
               .append(")");
             return sb.toString();
         }
@@ -52,10 +65,15 @@ public class LongfeiVote4DaCheng {
     private ConcurrentHashMap<String, Info> proxys = new ConcurrentHashMap<String, Info>();
     private AtomicInteger count = new AtomicInteger(0);
     private AtomicInteger countd = new AtomicInteger(0);
-    private ExecutorService pool = Executors.newCachedThreadPool();
+    private ThreadPoolExecutor pool = new ThreadPoolExecutor(
+            100,
+            100,
+            10L,
+            TimeUnit.SECONDS,
+            new LinkedBlockingQueue<Runnable>());
 
     private void vote() throws Exception {
-        for (;;) {
+        for (long last = System.currentTimeMillis();; last = System.currentTimeMillis()) {
             for (String ipport : proxys.keySet()) {
                 Info p = proxys.get(ipport);
                 if (p == null || p.err == null || p.err.get() <= 0) continue;
@@ -66,8 +84,10 @@ public class LongfeiVote4DaCheng {
                 Voter v = new Voter(getIp(ipport), getPort(ipport));
                 pool.execute(v);
             }
-            Thread.sleep((5 * 60 + 7) * 1000);
-            //  Thread.sleep(11 * 1000);
+            int sleep = (int) (PRODUCE_INTERVAL - System.currentTimeMillis() + last);
+            if (sleep > 0) {
+                Thread.sleep(sleep);
+            }
         }
     }
 
@@ -85,9 +105,29 @@ public class LongfeiVote4DaCheng {
                 if (!line.contains(":")) {
                     continue;
                 }
-                proxys.putIfAbsent(line, new Info());
+                proxys.putIfAbsent(line.trim(), new Info());
             }
-            System.out.println(proxys);
+            List<Map.Entry<String, Info>> list = new ArrayList<Map.Entry<String, Info>>(proxys.entrySet());
+            Collections.sort(list, new Comparator<Map.Entry<String, Info>>() {
+                private static final int FST_BIG = 1;
+
+                @Override
+                public int compare(Entry<String, Info> o1, Entry<String, Info> o2) {
+                    if (o1 == o2) return 0;
+                    if (o1 == null) return o2 == null ? 0 : FST_BIG;
+                    if (o2 == null) return -FST_BIG;
+                    int s1 = o1.getValue().succ.get();
+                    int s2 = o2.getValue().succ.get();
+                    return (s1 - s2) * FST_BIG;
+                }
+            });
+
+            StringBuilder sb = new StringBuilder(">>>------proxys-----------\r\n");
+            for (Map.Entry<String, Info> en : list) {
+                sb.append('\t').append(en.getKey()).append(" -> ").append(en.getValue()).append("\r\n");
+            }
+            sb.append("<<<------proxys--size=").append(list.size()).append("---------\r\n");
+            System.out.print(sb.toString());
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -165,12 +205,21 @@ public class LongfeiVote4DaCheng {
             PrintWriter out = null;
             BufferedReader in = null;
             long conn = 0, write = 0, read = 0;
-            long start = System.currentTimeMillis();
+            Info proxyInfo = null;
             try {
+                proxyInfo = proxys.get(ip + ":" + port);
+                long start = System.currentTimeMillis();
+                long last = proxyInfo.lastProcess.get();
+                if (last + VOTE_INTERVAL >= start) {
+                    //  System.out.println("====too short time======= delta="
+                    //                      + ((start - VOTE_INTERVAL - last) / 1000.0)
+                    //                     + "s");
+                    return;
+                }
                 s = new Socket();
                 s.connect(new InetSocketAddress(ip, port), 60000);
                 conn = -(start - (start = System.currentTimeMillis()));
-                s.setSoTimeout(80 * 1000);
+                s.setSoTimeout(120 * 1000);
                 out = new PrintWriter(new OutputStreamWriter(s.getOutputStream()));
                 in = new BufferedReader(new InputStreamReader(s.getInputStream(), "GBK"));
                 WriteThread t = new WriteThread(s);
@@ -193,15 +242,14 @@ public class LongfeiVote4DaCheng {
                 for (String line = null; (line = in.readLine()) != null;) {
                     if (line.contains("提交成功")) {
                         StringBuilder sb = new StringBuilder(ip).append(':').append(port);
-                        Info p = proxys.get(ip + ":" + port);
-                        if (p != null) {
-                            Integer succ = p.succ == null ? null : p.succ.incrementAndGet();
-                            Integer err = p.err == null ? null : p.err.get();
+                        if (proxyInfo != null) {
+                            Integer succ = proxyInfo.succ == null ? null : proxyInfo.succ.incrementAndGet();
+                            Integer err = proxyInfo.err == null ? null : proxyInfo.err.get();
                             sb.append(", succ=").append(succ).append(", errLeft=").append(err);
-                            p.restoreErr();
+                            proxyInfo.restoreErr();
                         }
                         read = -(start - (start = System.currentTimeMillis()));
-                        System.out.println("succ="
+                        System.out.println("successVoted="
                                            + count.incrementAndGet()
                                            + " "
                                            + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
@@ -215,33 +263,37 @@ public class LongfeiVote4DaCheng {
                                            + write
                                            + ", "
                                            + read
-                                           + ")ms");
+                                           + ")ms, queueSize="
+                                           + pool.getQueue().size());
+                        proxyInfo.lastProcess.set(System.currentTimeMillis());
                         break;
                     } else if (line.contains("提交过了")) {
                         StringBuilder sb = new StringBuilder(ip).append(':').append(port);
-                        Info p = proxys.get(ip + ":" + port);
-                        if (p != null) {
-                            Integer succ = p.succ == null ? null : p.succ.incrementAndGet();
-                            Integer err = p.err == null ? null : p.err.get();
+                        if (proxyInfo != null) {
+                            Integer succ = proxyInfo.succ == null ? null : proxyInfo.succ.incrementAndGet();
+                            Integer err = proxyInfo.err == null ? null : proxyInfo.err.get();
                             sb.append(", succ=").append(succ).append(", errLeft=").append(err);
-                            p.restoreErr();
+                            proxyInfo.restoreErr();
                         }
                         read = -(start - (start = System.currentTimeMillis()));
-                        System.out.println("duplicate="
-                                           + countd.incrementAndGet()
-                                           + " "
-                                           + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
-                                           + ", proxy="
-                                           + proxys.size()
-                                           + ", "
-                                           + sb.toString()
-                                           + ", resp=("
-                                           + conn
-                                           + ", "
-                                           + write
-                                           + ", "
-                                           + read
-                                           + ")ms");
+                        if (true) {
+                            System.out.println("duplicate="
+                                               + countd.incrementAndGet()
+                                               + " "
+                                               + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
+                                               + ", proxy="
+                                               + proxys.size()
+                                               + ", "
+                                               + sb.toString()
+                                               + ", resp=("
+                                               + conn
+                                               + ", "
+                                               + write
+                                               + ", "
+                                               + read
+                                               + ")ms, queueSize="
+                                               + pool.getQueue().size());
+                        }
                         break;
                     }
                 }
@@ -249,8 +301,10 @@ public class LongfeiVote4DaCheng {
                 System.err.println(e.toString() + ", proxys=" + proxys.size());
                 proxyErr(ip + ":" + port);
             } finally {
-                Info p = proxys.get(ip + ":" + port);
-                if (p != null) p.processing.set(false);
+                try {
+                    proxyInfo.processing.set(false);
+                } catch (Exception e2) {
+                }
                 try {
                     out.close();
                 } catch (Exception e) {
@@ -274,19 +328,19 @@ public class LongfeiVote4DaCheng {
         final LongfeiVote4DaCheng v = new LongfeiVote4DaCheng();
         v.reloadProxys();
 
-        new Thread() {
-            @Override
-            public void run() {
-                for (;;) {
-                    try {
-                        sleep(25 * 60 * 1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    v.reloadProxys();
-                }
-            }
-        }.start();
+        //        new Thread() {
+        //            @Override
+        //            public void run() {
+        //                for (;;) {
+        //                    try {
+        //                        sleep(25 * 60 * 1000);
+        //                    } catch (InterruptedException e) {
+        //                        e.printStackTrace();
+        //                    }
+        //                    v.reloadProxys();
+        //                }
+        //            }
+        //        }.start();
 
         //manual reload
         new Thread() {
