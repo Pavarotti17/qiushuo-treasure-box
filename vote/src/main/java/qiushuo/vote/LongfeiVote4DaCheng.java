@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
  */
 public class LongfeiVote4DaCheng {
-    private static final long VOTE_INTERVAL = 5 * 60 * 1000;
+    private static final long VOTE_INTERVAL = (5 * 60 + 2) * 1000;
     private static final long PRODUCE_INTERVAL = 37 * 1000;
 
     private static class Info {
@@ -276,8 +276,8 @@ public class LongfeiVote4DaCheng {
                             proxyInfo.restoreErr();
                         }
                         read = -(start - (start = System.currentTimeMillis()));
-                        if (true) {
-                            System.out.println("duplicate="
+                        if (false) {
+                            System.out.println("   duplicate="
                                                + countd.incrementAndGet()
                                                + " "
                                                + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
@@ -298,7 +298,7 @@ public class LongfeiVote4DaCheng {
                     }
                 }
             } catch (Exception e) {
-                System.err.println(e.toString() + ", proxys=" + proxys.size());
+                //System.err.println(e.toString() + ", proxys=" + proxys.size());
                 proxyErr(ip + ":" + port);
             } finally {
                 try {
