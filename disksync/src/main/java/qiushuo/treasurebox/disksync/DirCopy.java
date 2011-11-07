@@ -53,8 +53,10 @@ public class DirCopy {
      */
     private void copyDirFile(File fromFile, File toRoot) {
         if (fromFile.isFile()) {
-            File toFile = copyFile(fromFile, toRoot);
-            if (toFile != null) log(toFile.getAbsolutePath());
+            if (false) {
+                File toFile = copyFile(fromFile, toRoot);
+                if (toFile != null) log(toFile.getAbsolutePath());
+            }
         } else {
             File toDir = new File(toRoot, fromFile.getName());
             if (!toDir.exists()) {
