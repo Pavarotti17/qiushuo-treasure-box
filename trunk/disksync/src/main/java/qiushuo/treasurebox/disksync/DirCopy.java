@@ -72,8 +72,23 @@ public class DirCopy {
         }
     }
 
+    private boolean exist(File fromFile, File toFile) {
+        if (toFile.exists() && fromFile.isFile() && toFile.isFile()) {
+            long len1 = fromFile.length();
+            long len2 = toFile.length();
+            return len1 == len2;
+        } else {
+            return false;
+        }
+    }
+
     private File copyFile(File fromFile, File toDir) {
         File toFile = new File(toDir, fromFile.getName());
+        if (toFile.isDirectory()) {
+            toFile.delete();
+        } else if (exist(fromFile, toFile)) {
+            return toFile;
+        }
         FileInputStream fin = null;
         FileOutputStream fout = null;
         try {
