@@ -6,6 +6,7 @@ package qiushuo.treasurebox.disksync.common;
  * @author <a href="mailto:QiuShuo1985@gmail.com">QIU Shuo</a>
  */
 public class StringUtils {
+    
     public static byte fromString2Byte(char c1, char c2) {
         byte b = 0;
         if (c2 >= '0' && c2 <= '9') {
