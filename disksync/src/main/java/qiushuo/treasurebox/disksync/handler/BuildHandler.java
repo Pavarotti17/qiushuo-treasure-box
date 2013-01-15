@@ -1,16 +1,19 @@
 package qiushuo.treasurebox.disksync.handler;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 
 import qiushuo.treasurebox.disksync.Shell;
+import qiushuo.treasurebox.disksync.common.Config;
 import qiushuo.treasurebox.disksync.common.Confirm;
-import qiushuo.treasurebox.disksync.model.FileIndexKey;
+import qiushuo.treasurebox.disksync.common.FileSystemVisitor;
+import qiushuo.treasurebox.disksync.common.FileVisitor;
+import qiushuo.treasurebox.disksync.common.StringUtils;
+import qiushuo.treasurebox.disksync.model.IndexFile;
 
 /**
  * (created at 2011-11-7)
@@ -31,67 +34,59 @@ public class BuildHandler extends PathArgumentsHandler {
         File root = new File(rootPath);
         rootPath = root.getCanonicalPath();
         root = new File(rootPath);
-        System.out.println("build index for " + rootPath);
+        System.out.println("to build index (which will override existing index) for " + rootPath);
         if (!root.isDirectory()) {
             throw new IllegalArgumentException("build root must be dir");
         }
         if (!Confirm.confirm(sin)) return;
-
-        //QS_TODO
+        build(root);
     }
 
-    /**
-     * format: <code>md5:size,path</code>
-     */
-    private void readOldIndexFile(File indexFile) throws Exception {
-        fileContentIndex = new HashMap<String, FileContent>();
-        fileIndex = new HashMap<FileIndexKey, String>();
-        InputStream fin = null;
+    private void build(final File root) throws Exception {
+        FileOutputStream fout = null;
         try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(indexFile), "utf-8"));
-            for (String line = null; (line = in.readLine()) != null;) {
-                int comma = line.indexOf(',');
-                if (comma < 0) continue;
-                String indexString = line.substring(0, comma).trim();
-                String path = line.substring(1 + comma).trim();
-                //QS_TODO
-            }
+            fout = new FileOutputStream(new File(root, INDEX_FILE_NAME));
+            final PrintWriter out =
+                    new PrintWriter(new BufferedWriter(new OutputStreamWriter(fout, Config.INDEX_FILE_ENCODE)), true);
+            FileSystemVisitor.visit(root, new FileVisitor() {
+                @Override
+                public void visitFile(File file) throws Exception {
+                    if (root.getAbsolutePath().equals(file.getParentFile().getAbsolutePath())
+                        && INDEX_FILE_NAME.equals(file.getName())) {
+                        return;
+                    }
+                    String indexString = IndexFile.getIndexString4File(root, file);
+                    out.print(indexString);
+                    out.print(Config.INDEX_FILE_NEW_LINE);
+                }
+
+                @Override
+                public void visitDir(File dir) throws Exception {
+                    File[] list = dir.listFiles();
+                    if (list == null || list.length == 0) {
+                        String indexString = IndexFile.getIndexString4EmptyDir(root, dir);
+                        out.print(indexString);
+                        out.print(Config.INDEX_FILE_NEW_LINE);
+                    }
+                }
+            });
+            out.flush();
+            out.close();
         } finally {
             try {
-                fin.close();
+                fout.close();
             } catch (Exception e) {
             }
         }
     }
 
-    private Map<FileIndexKey, String> fileIndex;
-    private Map<String, FileContent> fileContentIndex;
-
-    private static class FileContent {
-        private final FileIndexKey key;
-        private final long gmt;
-
-        /**
-         * @param dirPath e.g. "China/G6/"
-         * @param gmt last modified time stamp
-         */
-        public FileContent(byte[] md5, int size, long gmt) {
-            this.key = new FileIndexKey(md5, size);
-            this.gmt = gmt;
-        }
-
-        @Override
-        public int hashCode() {
-            return (int) (key.hashCode() + gmt);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == this) return true;
-            if (!(obj instanceof FileContent)) return false;
-            FileContent that = (FileContent) obj;
-            return that.gmt == this.gmt && (that.key == null ? this.key == null : that.key.equals(this.key));
-        }
+    @Override
+    public String help(int indent) {
+        return StringUtils.indent(indent)
+               + "build ${absolutePath}"
+               + StringUtils.NEW_LINE
+               + StringUtils.indent(indent + 1)
+               + "absolutePath is the dir under which index file locate";
     }
 
 }

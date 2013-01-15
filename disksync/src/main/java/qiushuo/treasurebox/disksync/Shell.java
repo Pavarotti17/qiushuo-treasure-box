@@ -3,10 +3,12 @@ package qiushuo.treasurebox.disksync;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import qiushuo.treasurebox.disksync.common.CommandHandler;
+import qiushuo.treasurebox.disksync.common.StringUtils;
 import qiushuo.treasurebox.disksync.handler.BuildHandler;
 import qiushuo.treasurebox.disksync.handler.CDHandler;
 import qiushuo.treasurebox.disksync.handler.LLHandler;
@@ -17,7 +19,7 @@ import qiushuo.treasurebox.disksync.handler.LLHandler;
  * @author <a href="mailto:QiuShuo1985@gmail.com">QIU Shuo</a>
  */
 public class Shell {
-    private static Map<String, CommandHandler> handlers = new HashMap<String, CommandHandler>();
+    private static Map<String, CommandHandler> handlers = new TreeMap<String, CommandHandler>();
     static {
         handlers.put("cd", new CDHandler());
         handlers.put("ll", new LLHandler());
@@ -48,7 +50,12 @@ public class Shell {
             if (handler == null) {
                 help();
             } else {
-                handler.handle(this, line.substring(cmd.length()), null);
+                try {
+                    handler = handler.getClass().getConstructor().newInstance();
+                    handler.handle(this, line.substring(cmd.length()), null);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -69,7 +76,9 @@ public class Shell {
     }
 
     private void help() {
-        System.err.println("help");
-        //QS_TODO
+        for (Entry<String, CommandHandler> en : handlers.entrySet()) {
+            System.out.println(StringUtils.indent(1) + en.getKey());
+            System.out.println(en.getValue().help(2));
+        }
     }
 }

@@ -14,6 +14,7 @@ import java.util.Date;
  * @author <a href="mailto:QiuShuo1985@gmail.com">QIU Shuo</a>
  */
 public class DirCopy {
+    private static final boolean COPY_DIR_ONLY = true;
     private static SimpleDateFormat df = new SimpleDateFormat("[yyyy-MM-dd,HH:mm:ss] ");
 
     private static void log(String msg) {
@@ -60,10 +61,10 @@ public class DirCopy {
      */
     public void copyDirFile(File fromFile, File toRoot) {
         if (fromFile.isFile()) {
-            //if (false) {
-            File toFile = copyFile(fromFile, toRoot);
-            if (toFile != null) log(toFile.getAbsolutePath());
-            //}
+            if (!COPY_DIR_ONLY) {
+                File toFile = copyFile(fromFile, toRoot);
+                if (toFile != null) log(toFile.getAbsolutePath());
+            }
         } else {
             File toDir = new File(toRoot, fromFile.getName());
             if (!toDir.exists()) {

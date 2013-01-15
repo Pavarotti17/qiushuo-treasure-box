@@ -5,6 +5,7 @@ import java.io.File;
 
 import qiushuo.treasurebox.disksync.Shell;
 import qiushuo.treasurebox.disksync.common.CommandHandler;
+import qiushuo.treasurebox.disksync.common.StringUtils;
 
 /**
  * (created at 2011-11-4)
@@ -26,4 +27,8 @@ public class CDHandler implements CommandHandler {
         }
     }
 
+    @Override
+    public String help(int indent) {
+        return StringUtils.indent(indent) + "cd ${absolutePath}";
+    }
 }
