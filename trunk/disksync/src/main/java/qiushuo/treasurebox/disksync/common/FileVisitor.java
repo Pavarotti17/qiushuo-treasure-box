@@ -8,7 +8,7 @@ import java.io.File;
  * @author <a href="mailto:QiuShuo1985@gmail.com">QIU Shuo</a>
  */
 public interface FileVisitor {
-    void visitFile(File file);
+    void visitFile(File file) throws Exception;
 
-    void visitDir(File dir);
+    void visitDir(File dir) throws Exception;
 }

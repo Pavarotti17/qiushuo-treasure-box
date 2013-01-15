@@ -8,7 +8,7 @@ import java.io.File;
  * @author <a href="mailto:QiuShuo1985@gmail.com">QIU Shuo</a>
  */
 public class FileSystemVisitor {
-    public void visit(File file, FileVisitor visitor) {
+    public static void visit(File file, FileVisitor visitor) throws Exception {
         if (file == null) return;
         if (file.isDirectory()) {
             visitor.visitDir(file);
