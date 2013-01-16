@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -128,11 +129,14 @@ public class DirCopy {
         copier.copyDirFile(new File(fromFilePath), new File(toRootPath));
     }
 
+    /**
+     * not thread safe; can be reuse
+     */
     private static class FileCopier {
         private static final int BUFFER_POOL_SIZE = 2;
         private final long bufferSize;
         private final BufferPool bufferPool;
-        private final ArrayBlockingQueue<Buffer> dataQueue;
+        private final BlockingQueue<Buffer> dataQueue;
 
         public FileCopier(int bufferSize) {
             this.bufferSize = bufferSize;
@@ -140,45 +144,9 @@ public class DirCopy {
             this.dataQueue = new ArrayBlockingQueue<Buffer>(BUFFER_POOL_SIZE - 1);
         }
 
-        private void copyFileInSingalThread(File fromFile, File toFile) throws Exception {
-            FileInputStream fin = null;
-            FileOutputStream fout = null;
-            Buffer buf = null;
-            try {
-                fin = new FileInputStream(fromFile);
-                fout = new FileOutputStream(toFile);
-                for (buf = bufferPool.getBuffer(); (buf.size = fin.read(buf.data)) >= 0;) {
-                    if (buf.size > 0) {
-                        fout.write(buf.data, 0, buf.size);
-                    }
-                }
-            } catch (Exception e) {
-                err("fromFile: "
-                    + fromFile.getAbsolutePath()
-                    + ", toFile: "
-                    + toFile.getAbsolutePath()
-                    + ", exception: "
-                    + e);
-                throw e;
-            } finally {
-                try {
-                    fin.close();
-                } catch (Exception e2) {
-                }
-                try {
-                    fout.flush();
-                } catch (Exception e2) {
-                }
-                try {
-                    fout.close();
-                } catch (Exception e2) {
-                }
-                if (buf != null) {
-                    bufferPool.releaseBuffer(buf);
-                }
-            }
-        }
-
+        /**
+         * MUST NOT invoked concurrently
+         */
         public void doFileCopy(File fromFile, File toFile) throws Exception {
             if (fromFile.length() <= bufferSize) {
                 copyFileInSingalThread(fromFile, toFile);
@@ -219,6 +187,45 @@ public class DirCopy {
                 try {
                     for (Buffer buf = null; (buf = dataQueue.poll()) != null; bufferPool.releaseBuffer(buf));
                 } catch (Exception e2) {
+                }
+            }
+        }
+
+        private void copyFileInSingalThread(File fromFile, File toFile) throws Exception {
+            FileInputStream fin = null;
+            FileOutputStream fout = null;
+            Buffer buf = null;
+            try {
+                fin = new FileInputStream(fromFile);
+                fout = new FileOutputStream(toFile);
+                for (buf = bufferPool.getBuffer(); (buf.size = fin.read(buf.data)) >= 0;) {
+                    if (buf.size > 0) {
+                        fout.write(buf.data, 0, buf.size);
+                    }
+                }
+            } catch (Exception e) {
+                err("fromFile: "
+                    + fromFile.getAbsolutePath()
+                    + ", toFile: "
+                    + toFile.getAbsolutePath()
+                    + ", exception: "
+                    + e);
+                throw e;
+            } finally {
+                try {
+                    fin.close();
+                } catch (Exception e2) {
+                }
+                try {
+                    fout.flush();
+                } catch (Exception e2) {
+                }
+                try {
+                    fout.close();
+                } catch (Exception e2) {
+                }
+                if (buf != null) {
+                    bufferPool.releaseBuffer(buf);
                 }
             }
         }
