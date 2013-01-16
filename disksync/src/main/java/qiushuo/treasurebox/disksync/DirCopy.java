@@ -92,7 +92,7 @@ public class DirCopy {
             return toFile;
         }
         try {
-            fileCopier.doCopyFile(fromFile, toFile);
+            fileCopier.doFileCopy(fromFile, toFile);
         } catch (Exception e) {
             return null;
         }
@@ -130,15 +130,60 @@ public class DirCopy {
 
     private static class FileCopier {
         private static final int BUFFER_POOL_SIZE = 2;
+        private final long bufferSize;
         private final BufferPool bufferPool;
         private final ArrayBlockingQueue<Buffer> dataQueue;
 
         public FileCopier(int bufferSize) {
-            bufferPool = new BufferPool(BUFFER_POOL_SIZE, bufferSize);
-            dataQueue = new ArrayBlockingQueue<Buffer>(BUFFER_POOL_SIZE - 1);
+            this.bufferSize = bufferSize;
+            this.bufferPool = new BufferPool(BUFFER_POOL_SIZE, bufferSize);
+            this.dataQueue = new ArrayBlockingQueue<Buffer>(BUFFER_POOL_SIZE - 1);
         }
 
-        public void doCopyFile(File fromFile, File toFile) throws Exception {
+        private void copyFileInSingalThread(File fromFile, File toFile) throws Exception {
+            FileInputStream fin = null;
+            FileOutputStream fout = null;
+            Buffer buf = null;
+            try {
+                fin = new FileInputStream(fromFile);
+                fout = new FileOutputStream(toFile);
+                for (buf = bufferPool.getBuffer(); (buf.size = fin.read(buf.data)) >= 0;) {
+                    if (buf.size > 0) {
+                        fout.write(buf.data, 0, buf.size);
+                    }
+                }
+            } catch (Exception e) {
+                err("fromFile: "
+                    + fromFile.getAbsolutePath()
+                    + ", toFile: "
+                    + toFile.getAbsolutePath()
+                    + ", exception: "
+                    + e);
+                throw e;
+            } finally {
+                try {
+                    fin.close();
+                } catch (Exception e2) {
+                }
+                try {
+                    fout.flush();
+                } catch (Exception e2) {
+                }
+                try {
+                    fout.close();
+                } catch (Exception e2) {
+                }
+                if (buf != null) {
+                    bufferPool.releaseBuffer(buf);
+                }
+            }
+        }
+
+        public void doFileCopy(File fromFile, File toFile) throws Exception {
+            if (fromFile.length() <= bufferSize) {
+                copyFileInSingalThread(fromFile, toFile);
+                return;
+            }
             WriteThread writer = new WriteThread(toFile);
             writer.start();
             FileInputStream fin = null;
@@ -252,13 +297,12 @@ public class DirCopy {
             }
 
             public Buffer getBuffer() throws InterruptedException {
-                Buffer buf = null;
                 lock.lock();
                 try {
                     for (;;) {
                         for (int i = 0; i < pool.length; ++i) {
                             if (pool[i] != null) {
-                                buf = pool[i];
+                                Buffer buf = pool[i];
                                 pool[i] = null;
                                 return buf;
                             }
