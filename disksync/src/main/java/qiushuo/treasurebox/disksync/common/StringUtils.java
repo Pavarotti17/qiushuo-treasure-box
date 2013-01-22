@@ -8,6 +8,7 @@ import java.io.File;
  * @author <a href="mailto:QiuShuo1985@gmail.com">QIU Shuo</a>
  */
 public class StringUtils {
+    private static final byte[] EMPTY_BYTES = new byte[0];
     public static final String NEW_LINE = nl();
 
     private static String nl() {
@@ -41,17 +42,40 @@ public class StringUtils {
         return sb.toString();
     }
 
+    public static byte[] fromString2Byte(String str) {
+        if (str == null) return null;
+        if (str.length() == 0) return EMPTY_BYTES;
+        if (str.length() % 2 != 0) throw new IllegalArgumentException("string must contains even number of chars");
+        try {
+            byte[] rst = new byte[str.length() / 2];
+            for (int i = 0; i < rst.length; ++i) {
+                rst[i] = fromString2Byte(str.charAt(i * 2), str.charAt(i * 2 + 1));
+            }
+            return rst;
+        } catch (Exception e) {
+            throw new IllegalArgumentException("invalid string: " + str, e);
+        }
+    }
+
     public static byte fromString2Byte(char c1, char c2) {
         byte b = 0;
         if (c2 >= '0' && c2 <= '9') {
             b += (c2 - '0');
         } else if (c2 >= 'A' && c2 <= 'F') {
             b += (c2 - 'A' + 10);
+        } else if (c2 >= 'a' && c2 <= 'f') {
+            b += (c2 - 'a' + 10);
+        } else {
+            throw new IllegalArgumentException("char invalid: " + c2);
         }
         if (c1 >= '0' && c1 <= '9') {
             b += 0xf0 & ((c1 - '0') << 4);
         } else if (c1 >= 'A' && c1 <= 'F') {
             b += 0xf0 & ((c1 - 'A' + 10) << 4);
+        } else if (c1 >= 'a' && c1 <= 'f') {
+            b += 0xf0 & ((c1 - 'a' + 10) << 4);
+        } else {
+            throw new IllegalArgumentException("char invalid: " + c1);
         }
         return b;
     }

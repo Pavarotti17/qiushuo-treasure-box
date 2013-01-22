@@ -110,7 +110,7 @@ public class DirCopy {
     }
 
     /**
-     * -Xms240m -Xmx240m -Xmn24m -Xss256k
+     * -Xms240m -Xmx240m -Xmn24m -Xss512k 
      */
     public static void main(String[] args) throws Exception {
         int size = 96;

@@ -18,22 +18,37 @@ public class IndexFile {
     private static final byte[] READ_BUF = new byte[Config.READ_FILE_BUFFER_LEN];
 
     /**
-     * format: <code>md5:size:timestamp,path</code><br/>
-     * example:
-     * <code>1234567890ABCDEF1234567890ABCDEF:1234567:1357872482845,China/G 5/张艺谋/活着/huozhe.avi</code>
+     * @throws IllegalArgumentException if line is not right format for file
+     *             content
      */
-    public static String getIndexString4File(File root, File file) throws IOException, NoSuchAlgorithmException {
-        String size = String.valueOf(file.length());
-        String timestamp = String.valueOf(file.lastModified());
-        String path = StringUtils.getRelevantPath(root, file);
+    public static FileContent decodeAsFileContent(String line) throws IllegalArgumentException {
+        try {
+            line = line.trim();
+            int in = line.indexOf(':');
+            final String md5Str = line.substring(0, in);
+            line = line.substring(in + 1);
+            in = line.indexOf(':');
+            final long size = Long.parseLong(line.substring(0, in));
+            line = line.substring(in + 1);
+            in = line.indexOf(',');
+            final long time = Long.parseLong(line.substring(0, in));
+            String path = line.substring(in + 1).trim();
+            return new FileContent(path, md5Str, size, time);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("format error: " + line, e);
+        }
+    }
 
+    public static FileContent buildIndexFileContent(File root, File file) throws IOException, NoSuchAlgorithmException {
         byte[] md5bytes;
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         FileInputStream in = null;
         try {
             in = new FileInputStream(file);
             for (int len = 0; (len = in.read(READ_BUF)) >= 0;) {
-                md5.update(READ_BUF, 0, len);
+                if (len > 0) {
+                    md5.update(READ_BUF, 0, len);
+                }
             }
             md5bytes = md5.digest();
         } finally {
@@ -42,16 +57,7 @@ public class IndexFile {
             } catch (Exception e) {
             }
         }
-        StringBuilder sb =
-                new StringBuilder(md5bytes.length * 2 + size.length() + timestamp.length() + path.length() + 3);
-        sb.append(StringUtils.bytes2String(md5bytes))
-          .append(':')
-          .append(size)
-          .append(':')
-          .append(timestamp)
-          .append(',')
-          .append(path);
-        return sb.toString();
+        return new FileContent(StringUtils.getRelevantPath(root, file), md5bytes, file.length(), file.lastModified());
     }
 
     /**
@@ -60,60 +66,74 @@ public class IndexFile {
      */
     public static String getIndexString4EmptyDir(File root, File dir) throws IOException {
         String path = StringUtils.getRelevantPath(root, dir);
-        return new StringBuilder(4 + path).append("[],").append(path).append('/').toString();
+        return new StringBuilder(4 + path.length()).append("[],")
+                                                   .append(path)
+                                                   .append(Config.INDEX_FILE_PATH_SEPERATOR)
+                                                   .toString();
     }
 
-    //    /**
-    //     * format: <code>md5:size:,path</code>
-    //     */
-    //    private void readOldIndexFile(File indexFile) throws Exception {
-    //        fileContentIndex = new HashMap<String, FileContent>();
-    //        fileIndex = new HashMap<FileIndexKey, String>();
-    //        InputStream fin = null;
-    //        try {
-    //            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(indexFile), "utf-8"));
-    //            for (String line = null; (line = in.readLine()) != null;) {
-    //                int comma = line.indexOf(',');
-    //                if (comma < 0) continue;
-    //                String indexString = line.substring(0, comma).trim();
-    //                String path = line.substring(1 + comma).trim();
-    //                //QS_TODO
-    //            }
-    //        } finally {
-    //            try {
-    //                fin.close();
-    //            } catch (Exception e) {
-    //            }
-    //        }
-    //    }
-    //
-    //    private Map<FileIndexKey, String> fileIndex;
-    //    private Map<String, FileContent> fileContentIndex;
-    //
-    //    private static class FileContent {
-    //        private final FileIndexKey key;
-    //        private final long gmt;
-    //
-    //        /**
-    //         * @param dirPath e.g. "China/G6/"
-    //         * @param gmt last modified time stamp
-    //         */
-    //        public FileContent(byte[] md5, int size, long gmt) {
-    //            this.key = new FileIndexKey(md5, size);
-    //            this.gmt = gmt;
-    //        }
-    //
-    //        @Override
-    //        public int hashCode() {
-    //            return (int) (key.hashCode() + gmt);
-    //        }
-    //
-    //        @Override
-    //        public boolean equals(Object obj) {
-    //            if (obj == this) return true;
-    //            if (!(obj instanceof FileContent)) return false;
-    //            FileContent that = (FileContent) obj;
-    //            return that.gmt == this.gmt && (that.key == null ? this.key == null : that.key.equals(this.key));
-    //        }
-    //    }
+    /**
+     * format: <code>md5:size:timestamp,path</code><br/>
+     * example:
+     * <code>1234567890ABCDEF1234567890ABCDEF:1234567:1357872482845,China/G 5/张艺谋/活着/huozhe.avi</code>
+     */
+    public static class FileContent {
+        private final String path;
+        private final String md5String;
+        private final byte[] md5;
+        private final long size;
+        private final long timestamp;
+
+        public FileContent(String path, String md5String, long size, long timestamp) throws NoSuchAlgorithmException {
+            this.path = path;
+            this.md5String = md5String.toUpperCase();
+            this.md5 = StringUtils.fromString2Byte(md5String);
+            if (this.md5.length != MessageDigest.getInstance("MD5").getDigestLength()) {
+                throw new IllegalArgumentException("wrong md5 string: " + md5String);
+            }
+            this.size = size;
+            this.timestamp = timestamp;
+        }
+
+        public FileContent(String path, byte[] md5, long size, long timestamp) throws NoSuchAlgorithmException {
+            this.path = path;
+            this.md5String = StringUtils.bytes2String(md5).toUpperCase();
+            this.md5 = md5;
+            if (this.md5.length != MessageDigest.getInstance("MD5").getDigestLength()) {
+                throw new IllegalArgumentException("wrong md5 string: " + md5String);
+            }
+            this.size = size;
+            this.timestamp = timestamp;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder(md5String.length() + 20 + path.length() + 3);
+            sb.append(md5String).append(':').append(size).append(':').append(timestamp).append(',').append(path);
+            return sb.toString();
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public String getMd5String() {
+            return md5String;
+        }
+
+        /**
+         * @return do not modify it!
+         */
+        public byte[] getMd5() {
+            return md5;
+        }
+
+        public long getSize() {
+            return size;
+        }
+
+        public long getTimestamp() {
+            return timestamp;
+        }
+    }
 }

@@ -52,7 +52,7 @@ public class Shell {
             } else {
                 try {
                     handler = handler.getClass().getConstructor().newInstance();
-                    handler.handle(this, line.substring(cmd.length()), null);
+                    handler.handle(this, line.substring(cmd.length()), sin);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
