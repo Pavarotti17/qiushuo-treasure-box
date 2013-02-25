@@ -41,12 +41,12 @@ public class BuildHandler extends PathArgumentsHandler {
         }
         File root = new File(rootPath);
         rootPath = root.getCanonicalPath();
-        root = new File(rootPath);
         System.out.println("to build index (which will override existing index) for " + rootPath);
         if (!root.isDirectory()) {
             throw new IllegalArgumentException("build root must be dir");
         }
-        if (!Confirm.confirm(sin)) return;
+        if (!Confirm.confirm(sin))
+            return;
         build(root);
     }
 
@@ -62,10 +62,9 @@ public class BuildHandler extends PathArgumentsHandler {
             oldMap = new HashMap<String, FileContent>();
             FileInputStream fin = null;
             try {
-                BufferedReader in =
-                        new BufferedReader(new InputStreamReader(
-                                fin = new FileInputStream(indexFile),
-                                Config.INDEX_FILE_ENCODE));
+                BufferedReader in = new BufferedReader(new InputStreamReader(
+                        fin = new FileInputStream(indexFile),
+                        Config.INDEX_FILE_ENCODE));
                 for (String line = null; (line = in.readLine()) != null;) {
                     FileContent fc = null;
                     try {
@@ -90,13 +89,15 @@ public class BuildHandler extends PathArgumentsHandler {
         FileOutputStream fout = null;
         try {
             fout = new FileOutputStream(new File(root, INDEX_FILE_NAME));
-            final PrintWriter out =
-                    new PrintWriter(new BufferedWriter(new OutputStreamWriter(fout, Config.INDEX_FILE_ENCODE)), true);
+            final PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(
+                    fout,
+                    Config.INDEX_FILE_ENCODE)), true);
             FileSystemVisitor.visit(root, new FileVisitor() {
                 private FileContent checkExists(File file) {
                     String path = StringUtils.getRelevantPath(root, file);
                     FileContent fc = oldMap.get(path);
-                    if (fc == null) return null;
+                    if (fc == null)
+                        return null;
                     if (fc.getSize() == file.length() && fc.getTimestamp() == file.lastModified()) {
                         return fc;
                     }
@@ -106,7 +107,7 @@ public class BuildHandler extends PathArgumentsHandler {
                 @Override
                 public void visitFile(File file) throws Exception {
                     if (root.getAbsolutePath().equals(file.getParentFile().getAbsolutePath())
-                        && INDEX_FILE_NAME.equals(file.getName())) {
+                            && INDEX_FILE_NAME.equals(file.getName())) {
                         return;
                     }
                     FileContent fc = checkExists(file);
@@ -149,11 +150,8 @@ public class BuildHandler extends PathArgumentsHandler {
 
     @Override
     public String help(int indent) {
-        return StringUtils.indent(indent)
-               + "build ${absolutePath}"
-               + StringUtils.NEW_LINE
-               + StringUtils.indent(indent + 1)
-               + "absolutePath is the dir under which index file locate";
+        return StringUtils.indent(indent) + "build ${absolutePath}" + StringUtils.NEW_LINE
+                + StringUtils.indent(indent + 1) + "absolutePath is the dir under which index file locate";
     }
 
 }

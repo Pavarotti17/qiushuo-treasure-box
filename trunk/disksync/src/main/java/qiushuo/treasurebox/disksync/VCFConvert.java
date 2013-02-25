@@ -37,7 +37,8 @@ public class VCFConvert {
                         File to = new File(toDir, f.getName());
                         out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(to), "GBK"));
                         for (String line = null; (line = in.readLine()) != null;) {
-                            if (line.trim().length() == 0) continue;
+                            if (line.trim().length() == 0)
+                                continue;
 
                             if (line.contains(";CHARSET=UTF-8")) {
                                 line = StringUtils.replace(line, ";CHARSET=UTF-8", "");
@@ -45,7 +46,7 @@ public class VCFConvert {
                             if (line.contains(";ENCODING=8BIT")) {
                                 line = StringUtils.replace(line, ";ENCODING=8BIT", "");
                             }
-                            if(line.contains(";PREF")){
+                            if (line.contains(";PREF")) {
                                 line = StringUtils.replace(line, ";PREF", "");
                             }
                             if (line.contains(";ENCODING=BASE64")) {
@@ -57,11 +58,12 @@ public class VCFConvert {
                                 msg = new String(decoder.decodeBuffer(msg));
                                 sb.append(line.substring(left + ";ENCODING=BASE64".length(), line.lastIndexOf(':') + 1));
                                 sb.append(msg);
-                                line=sb.toString();
+                                line = sb.toString();
                             }
-                            if(line.startsWith("N;")||line.startsWith("N:")){
-                                line+=";;;";
-                            }out.println(line);
+                            if (line.startsWith("N;") || line.startsWith("N:")) {
+                                line += ";;;";
+                            }
+                            out.println(line);
                         }
                         out.flush();
                     } catch (Exception e) {

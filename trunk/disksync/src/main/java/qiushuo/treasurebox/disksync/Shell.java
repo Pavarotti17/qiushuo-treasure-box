@@ -39,12 +39,16 @@ public class Shell {
             System.out.println();
             System.out.print(getWorkRoot() + " >> ");
             line = sin.readLine();
-            if (line == null) return;
+            if (line == null)
+                return;
             line = line.trim();
-            if (line.toLowerCase().equals("exit") || line.toLowerCase().equals("quit")) return;
+            if (line.toLowerCase().equals("exit") || line.toLowerCase().equals("quit"))
+                return;
             int i = line.indexOf(' ');
-            if (i < 0) i = line.indexOf('\t');
-            if (i < 0) i = line.length();
+            if (i < 0)
+                i = line.indexOf('\t');
+            if (i < 0)
+                i = line.length();
             String cmd = line.substring(0, i).toLowerCase();
             CommandHandler handler = handlers.get(cmd);
             if (handler == null) {
