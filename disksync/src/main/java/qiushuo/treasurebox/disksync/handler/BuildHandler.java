@@ -20,8 +20,8 @@ import qiushuo.treasurebox.disksync.common.Confirm;
 import qiushuo.treasurebox.disksync.common.FileSystemVisitor;
 import qiushuo.treasurebox.disksync.common.FileVisitor;
 import qiushuo.treasurebox.disksync.common.StringUtils;
-import qiushuo.treasurebox.disksync.model.IndexFile;
-import qiushuo.treasurebox.disksync.model.IndexFile.FileContent;
+import qiushuo.treasurebox.disksync.model.FileContent;
+import qiushuo.treasurebox.disksync.model.IndexFileUtil;
 
 /**
  * (created at 2011-11-7)
@@ -30,6 +30,10 @@ import qiushuo.treasurebox.disksync.model.IndexFile.FileContent;
  */
 public class BuildHandler extends PathArgumentsHandler {
     private static final String INDEX_FILE_NAME = ".fileContentIndex.qs";
+    /** already exist */
+    private Map<String, FileContent> oldMap;
+    private Map<String, FileContent> fileMap;
+    private Set<String> emptyDir;
 
     @Override
     public synchronized void handle(Shell shell, String cmdArg, BufferedReader sin) throws Exception {
@@ -50,12 +54,15 @@ public class BuildHandler extends PathArgumentsHandler {
         build(root);
     }
 
-    /** already exist */
-    private Map<String, FileContent> oldMap;
-    private Map<String, FileContent> fileMap;
-    private Set<String> emptyDir;
+    public Map<String, FileContent> getFileMap() {
+        return this.fileMap;
+    }
 
-    private void build(final File root) throws Exception {
+    public Set<String> getEmptyDir() {
+        return this.emptyDir;
+    }
+
+    public void build(final File root) throws Exception {
         File indexFile = new File(root, INDEX_FILE_NAME);
         //build oldMap
         if (indexFile.exists()) {
@@ -68,7 +75,7 @@ public class BuildHandler extends PathArgumentsHandler {
                 for (String line = null; (line = in.readLine()) != null;) {
                     FileContent fc = null;
                     try {
-                        fc = IndexFile.decodeAsFileContent(line);
+                        fc = IndexFileUtil.decodeAsFileContent(line);
                     } catch (Exception e) {
                     }
                     if (fc != null) {
@@ -112,10 +119,10 @@ public class BuildHandler extends PathArgumentsHandler {
                     }
                     FileContent fc = checkExists(file);
                     if (fc == null) {
-                        fc = IndexFile.buildIndexFileContent(root, file);
+                        fc = IndexFileUtil.buildIndexFileContent(root, file);
                     }
                     if (fileMap == null) {
-                        fileMap = new HashMap<String, IndexFile.FileContent>();
+                        fileMap = new HashMap<String, FileContent>();
                     }
                     fileMap.put(fc.getPath(), fc);
                     out.print(fc.toString());
@@ -130,7 +137,7 @@ public class BuildHandler extends PathArgumentsHandler {
                             emptyDir = new HashSet<String>();
                         }
                         emptyDir.add(StringUtils.getRelevantPath(root, dir) + Config.INDEX_FILE_PATH_SEPERATOR);
-                        String indexString = IndexFile.getIndexString4EmptyDir(root, dir);
+                        String indexString = IndexFileUtil.getIndexString4EmptyDir(root, dir);
                         out.print(indexString);
                         out.print(Config.INDEX_FILE_NEW_LINE);
                     }
@@ -143,9 +150,8 @@ public class BuildHandler extends PathArgumentsHandler {
                 fout.close();
             } catch (Exception e) {
             }
+            oldMap = null;
         }
-
-        oldMap = null;
     }
 
     @Override
