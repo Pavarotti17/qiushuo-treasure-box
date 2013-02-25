@@ -12,6 +12,7 @@ import qiushuo.treasurebox.disksync.common.StringUtils;
 import qiushuo.treasurebox.disksync.handler.BuildHandler;
 import qiushuo.treasurebox.disksync.handler.CDHandler;
 import qiushuo.treasurebox.disksync.handler.LLHandler;
+import qiushuo.treasurebox.disksync.handler.SyncHandler;
 
 /**
  * (created at 2011-11-4)
@@ -24,6 +25,7 @@ public class Shell {
         handlers.put("cd", new CDHandler());
         handlers.put("ll", new LLHandler());
         handlers.put("build", new BuildHandler());
+        handlers.put("sync", new SyncHandler());
         //QS_TODO add handler
     }
 

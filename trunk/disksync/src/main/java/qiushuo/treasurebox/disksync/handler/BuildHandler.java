@@ -88,7 +88,7 @@ public class BuildHandler extends PathArgumentsHandler {
         //build newMap
         FileOutputStream fout = null;
         try {
-            fout = new FileOutputStream(new File(root, INDEX_FILE_NAME));
+            fout = new FileOutputStream(indexFile);
             final PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(
                     fout,
                     Config.INDEX_FILE_ENCODE)), true);
