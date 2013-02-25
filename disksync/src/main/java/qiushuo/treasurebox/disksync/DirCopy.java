@@ -31,14 +31,18 @@ public class DirCopy {
         System.err.println(new StringBuilder().append(df.format(new Date())).append(msg));
     }
 
-    private static boolean exist(File fromFile, File toFile) {
+    /**
+     * check: lastModified with precision of second; fileLength
+     */
+    private static boolean isFileAlreadyExist(File fromFile, File toFile) {
         if (toFile.exists() && fromFile.isFile() && toFile.isFile()) {
             long len1 = fromFile.length();
             long len2 = toFile.length();
-            return len1 == len2;
-        } else {
-            return false;
+            long t1 = fromFile.lastModified() / 1000;
+            long t2 = toFile.lastModified() / 1000;
+            return len1 == len2 && t1 == t2;
         }
+        return false;
     }
 
     public static void deleteDir(File dir) {
@@ -70,8 +74,9 @@ public class DirCopy {
         if (fromFile.isFile()) {
             if (!COPY_DIR_ONLY) {
                 File toFile = copyFile(fromFile, toRoot);
-                if (toFile != null)
+                if (toFile != null) {
                     log(toFile.getAbsolutePath());
+                }
             }
         } else {
             File toDir = new File(toRoot, fromFile.getName());
@@ -92,14 +97,16 @@ public class DirCopy {
         File toFile = new File(toDir, fromFile.getName());
         if (toFile.isDirectory()) {
             deleteDir(toFile);
-        } else if (exist(fromFile, toFile)) {
+        } else if (isFileAlreadyExist(fromFile, toFile)) {
             return toFile;
         }
         try {
             fileCopier.doFileCopy(fromFile, toFile);
+            toFile.setLastModified(fromFile.lastModified());
         } catch (Exception e) {
             return null;
         }
+
         checkSameContent(fromFile, toFile);
         return toFile;
     }
