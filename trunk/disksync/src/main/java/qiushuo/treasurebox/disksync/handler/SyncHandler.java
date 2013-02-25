@@ -19,9 +19,11 @@
 package qiushuo.treasurebox.disksync.handler;
 
 import java.io.BufferedReader;
+import java.io.File;
 
 import qiushuo.treasurebox.disksync.Shell;
 import qiushuo.treasurebox.disksync.common.CommandHandler;
+import qiushuo.treasurebox.disksync.common.Confirm;
 import qiushuo.treasurebox.disksync.common.StringUtils;
 
 /**
@@ -31,8 +33,31 @@ public class SyncHandler implements CommandHandler {
 
     @Override
     public void handle(Shell shell, String cmdArg, BufferedReader sin) throws Exception {
-        // QS_TODO
+        System.out.println("src dir path(e.g. F:\\Movie):");
+        String line = sin.readLine().trim();
+        File srcDir = new File(line);
+        System.out.println("dest dir path(e.g. F:\\Movie):");
+        line = sin.readLine().trim();
+        File destDir = new File(line);
+        if (!srcDir.isDirectory() || !destDir.isDirectory()) {
+            throw new IllegalArgumentException("src or dest path is not dir! src: " + srcDir.getAbsolutePath()
+                    + ", dest: " + destDir.getAbsolutePath());
+        }
+        System.out.println("sync from " + srcDir.getAbsolutePath());
+        System.out.println("   --to-> " + destDir.getAbsolutePath());
+        Confirm.confirm(sin);
+        sync(srcDir, destDir);
+    }
 
+    /**
+     * @param fromDir content never changed
+     * @param toDir content changed according to fromDir
+     */
+    private void sync(File fromDir, File toDir) throws Exception {
+        BuildHandler fromBuilder = new BuildHandler();
+        BuildHandler toBuilder = new BuildHandler();
+
+        //QS_TODO
     }
 
     @Override

@@ -10,7 +10,6 @@ import qiushuo.treasurebox.disksync.common.StringUtils;
 public class IndexKey {
     private final byte[] md5;
     private final int fileSize;
-    private String toString;
 
     public IndexKey(byte[] md5, int fileSize) {
         if (md5.length < 4) throw new IllegalArgumentException("md5 argument");
@@ -52,6 +51,7 @@ public class IndexKey {
         return true;
     }
 
+    private String toString;
     @Override
     public String toString() {
         if (toString != null) return toString;
