@@ -55,7 +55,8 @@ public class WindowsTrashFileCleaner {
 
     private static void cleanDir(File dir) {
         File[] fs = dir.listFiles();
-        if (fs == null || fs.length <= 0) return;
+        if (fs == null || fs.length <= 0)
+            return;
         for (File f : fs) {
             if (!validName(f)) {
                 dealDirFile(f);
@@ -75,17 +76,9 @@ public class WindowsTrashFileCleaner {
 
     private static boolean validName(File f) {
         String name = f.getName();
-        if (name == null
-            || name.length() <= 0
-            || name.contains("/")
-            || name.contains("\\")
-            || name.contains(":")
-            || name.contains("*")
-            || name.contains("?")
-            || name.contains("\"")
-            || name.contains("<")
-            || name.contains(">")
-            || name.contains("|")) {
+        if (name == null || name.length() <= 0 || name.contains("/") || name.contains("\\") || name.contains(":")
+                || name.contains("*") || name.contains("?") || name.contains("\"") || name.contains("<")
+                || name.contains(">") || name.contains("|")) {
             return false;
         }
         return true;

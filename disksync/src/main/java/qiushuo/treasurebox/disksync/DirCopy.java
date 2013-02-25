@@ -42,8 +42,10 @@ public class DirCopy {
     }
 
     public static void deleteDir(File dir) {
-        if (dir == null) return;
-        if (dir.isFile()) dir.delete();
+        if (dir == null)
+            return;
+        if (dir.isFile())
+            dir.delete();
         if (dir.isDirectory()) {
             File[] children = dir.listFiles();
             if (children != null && children.length > 0) {
@@ -68,7 +70,8 @@ public class DirCopy {
         if (fromFile.isFile()) {
             if (!COPY_DIR_ONLY) {
                 File toFile = copyFile(fromFile, toRoot);
-                if (toFile != null) log(toFile.getAbsolutePath());
+                if (toFile != null)
+                    log(toFile.getAbsolutePath());
             }
         } else {
             File toDir = new File(toRoot, fromFile.getName());
@@ -110,7 +113,7 @@ public class DirCopy {
     }
 
     /**
-     * -Xms240m -Xmx240m -Xmn24m -Xss512k 
+     * -Xms240m -Xmx240m -Xmn24m -Xss512k
      */
     public static void main(String[] args) throws Exception {
         int size = 96;
@@ -204,12 +207,8 @@ public class DirCopy {
                     }
                 }
             } catch (Exception e) {
-                err("fromFile: "
-                    + fromFile.getAbsolutePath()
-                    + ", toFile: "
-                    + toFile.getAbsolutePath()
-                    + ", exception: "
-                    + e);
+                err("fromFile: " + fromFile.getAbsolutePath() + ", toFile: " + toFile.getAbsolutePath()
+                        + ", exception: " + e);
                 throw e;
             } finally {
                 try {
@@ -294,7 +293,8 @@ public class DirCopy {
             private final Condition notEmpty;
 
             public BufferPool(int capacity, int bufferSize) {
-                if (capacity <= 0) throw new IllegalArgumentException("buffer pool at least have one buffer");
+                if (capacity <= 0)
+                    throw new IllegalArgumentException("buffer pool at least have one buffer");
                 this.lock = new ReentrantLock();
                 this.notEmpty = this.lock.newCondition();
                 this.pool = new Buffer[capacity];
