@@ -17,7 +17,7 @@ import qiushuo.treasurebox.disksync.handler.SyncHandler;
 /**
  * (created at 2011-11-4)
  * 
- * @author <a href="mailto:QiuShuo1985@gmail.com">QIU Shuo</a>
+ * @author <a href="mailto:shuo.qius@gmail.com">QIU Shuo</a>
  */
 public class Shell {
     private static Map<String, CommandHandler> handlers = new TreeMap<String, CommandHandler>();

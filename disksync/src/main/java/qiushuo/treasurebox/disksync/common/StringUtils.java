@@ -5,7 +5,7 @@ import java.io.File;
 /**
  * (created at 2011-11-7)
  * 
- * @author <a href="mailto:QiuShuo1985@gmail.com">QIU Shuo</a>
+ * @author <a href="mailto:shuo.qius@gmail.com">QIU Shuo</a>
  */
 public class StringUtils {
     private static final byte[] EMPTY_BYTES = new byte[0];
@@ -43,9 +43,12 @@ public class StringUtils {
     }
 
     public static byte[] fromString2Byte(String str) {
-        if (str == null) return null;
-        if (str.length() == 0) return EMPTY_BYTES;
-        if (str.length() % 2 != 0) throw new IllegalArgumentException("string must contains even number of chars");
+        if (str == null)
+            return null;
+        if (str.length() == 0)
+            return EMPTY_BYTES;
+        if (str.length() % 2 != 0)
+            throw new IllegalArgumentException("string must contains even number of chars");
         try {
             byte[] rst = new byte[str.length() / 2];
             for (int i = 0; i < rst.length; ++i) {
@@ -81,112 +84,114 @@ public class StringUtils {
     }
 
     public static String bytes2String(byte[] bs) {
-        if (bs == null) return null;
-        if (bs.length <= 0) return "";
+        if (bs == null)
+            return null;
+        if (bs.length <= 0)
+            return "";
         char[] chars = new char[2 * bs.length];
         for (int i = 0, len = bs.length; i < len; ++i) {
             byte b = bs[i];
             final int up = (b >> 4) & 0x0f;
             final int low = b & 0x0f;
             switch (up) {
-                case 0:
-                    chars[2 * i] = '0';
-                    break;
-                case 1:
-                    chars[2 * i] = '1';
-                    break;
-                case 2:
-                    chars[2 * i] = '2';
-                    break;
-                case 3:
-                    chars[2 * i] = '3';
-                    break;
-                case 4:
-                    chars[2 * i] = '4';
-                    break;
-                case 5:
-                    chars[2 * i] = '5';
-                    break;
-                case 6:
-                    chars[2 * i] = '6';
-                    break;
-                case 7:
-                    chars[2 * i] = '7';
-                    break;
-                case 8:
-                    chars[2 * i] = '8';
-                    break;
-                case 9:
-                    chars[2 * i] = '9';
-                    break;
-                case 10:
-                    chars[2 * i] = 'A';
-                    break;
-                case 11:
-                    chars[2 * i] = 'B';
-                    break;
-                case 12:
-                    chars[2 * i] = 'C';
-                    break;
-                case 13:
-                    chars[2 * i] = 'D';
-                    break;
-                case 14:
-                    chars[2 * i] = 'E';
-                    break;
-                case 15:
-                    chars[2 * i] = 'F';
-                    break;
+            case 0:
+                chars[2 * i] = '0';
+                break;
+            case 1:
+                chars[2 * i] = '1';
+                break;
+            case 2:
+                chars[2 * i] = '2';
+                break;
+            case 3:
+                chars[2 * i] = '3';
+                break;
+            case 4:
+                chars[2 * i] = '4';
+                break;
+            case 5:
+                chars[2 * i] = '5';
+                break;
+            case 6:
+                chars[2 * i] = '6';
+                break;
+            case 7:
+                chars[2 * i] = '7';
+                break;
+            case 8:
+                chars[2 * i] = '8';
+                break;
+            case 9:
+                chars[2 * i] = '9';
+                break;
+            case 10:
+                chars[2 * i] = 'A';
+                break;
+            case 11:
+                chars[2 * i] = 'B';
+                break;
+            case 12:
+                chars[2 * i] = 'C';
+                break;
+            case 13:
+                chars[2 * i] = 'D';
+                break;
+            case 14:
+                chars[2 * i] = 'E';
+                break;
+            case 15:
+                chars[2 * i] = 'F';
+                break;
             }
             switch (low) {
-                case 0:
-                    chars[2 * i + 1] = '0';
-                    break;
-                case 1:
-                    chars[2 * i + 1] = '1';
-                    break;
-                case 2:
-                    chars[2 * i + 1] = '2';
-                    break;
-                case 3:
-                    chars[2 * i + 1] = '3';
-                    break;
-                case 4:
-                    chars[2 * i + 1] = '4';
-                    break;
-                case 5:
-                    chars[2 * i + 1] = '5';
-                    break;
-                case 6:
-                    chars[2 * i + 1] = '6';
-                    break;
-                case 7:
-                    chars[2 * i + 1] = '7';
-                    break;
-                case 8:
-                    chars[2 * i + 1] = '8';
-                    break;
-                case 9:
-                    chars[2 * i + 1] = '9';
-                    break;
-                case 10:
-                    chars[2 * i + 1] = 'A';
-                    break;
-                case 11:
-                    chars[2 * i + 1] = 'B';
-                    break;
-                case 12:
-                    chars[2 * i + 1] = 'C';
-                    break;
-                case 13:
-                    chars[2 * i + 1] = 'D';
-                    break;
-                case 14:
-                    chars[2 * i + 1] = 'E';
-                    break;
-                case 15:
-                    chars[2 * i + 1] = 'F';
-                    break;
+            case 0:
+                chars[2 * i + 1] = '0';
+                break;
+            case 1:
+                chars[2 * i + 1] = '1';
+                break;
+            case 2:
+                chars[2 * i + 1] = '2';
+                break;
+            case 3:
+                chars[2 * i + 1] = '3';
+                break;
+            case 4:
+                chars[2 * i + 1] = '4';
+                break;
+            case 5:
+                chars[2 * i + 1] = '5';
+                break;
+            case 6:
+                chars[2 * i + 1] = '6';
+                break;
+            case 7:
+                chars[2 * i + 1] = '7';
+                break;
+            case 8:
+                chars[2 * i + 1] = '8';
+                break;
+            case 9:
+                chars[2 * i + 1] = '9';
+                break;
+            case 10:
+                chars[2 * i + 1] = 'A';
+                break;
+            case 11:
+                chars[2 * i + 1] = 'B';
+                break;
+            case 12:
+                chars[2 * i + 1] = 'C';
+                break;
+            case 13:
+                chars[2 * i + 1] = 'D';
+                break;
+            case 14:
+                chars[2 * i + 1] = 'E';
+                break;
+            case 15:
+                chars[2 * i + 1] = 'F';
+                break;
             }
         }
         return new String(chars);
@@ -197,104 +202,104 @@ public class StringUtils {
         final int low = b & 0x0f;
         char[] chars = new char[2];
         switch (up) {
-            case 0:
-                chars[0] = '0';
-                break;
-            case 1:
-                chars[0] = '1';
-                break;
-            case 2:
-                chars[0] = '2';
-                break;
-            case 3:
-                chars[0] = '3';
-                break;
-            case 4:
-                chars[0] = '4';
-                break;
-            case 5:
-                chars[0] = '5';
-                break;
-            case 6:
-                chars[0] = '6';
-                break;
-            case 7:
-                chars[0] = '7';
-                break;
-            case 8:
-                chars[0] = '8';
-                break;
-            case 9:
-                chars[0] = '9';
-                break;
-            case 10:
-                chars[0] = 'A';
-                break;
-            case 11:
-                chars[0] = 'B';
-                break;
-            case 12:
-                chars[0] = 'C';
-                break;
-            case 13:
-                chars[0] = 'D';
-                break;
-            case 14:
-                chars[0] = 'E';
-                break;
-            case 15:
-                chars[0] = 'F';
-                break;
+        case 0:
+            chars[0] = '0';
+            break;
+        case 1:
+            chars[0] = '1';
+            break;
+        case 2:
+            chars[0] = '2';
+            break;
+        case 3:
+            chars[0] = '3';
+            break;
+        case 4:
+            chars[0] = '4';
+            break;
+        case 5:
+            chars[0] = '5';
+            break;
+        case 6:
+            chars[0] = '6';
+            break;
+        case 7:
+            chars[0] = '7';
+            break;
+        case 8:
+            chars[0] = '8';
+            break;
+        case 9:
+            chars[0] = '9';
+            break;
+        case 10:
+            chars[0] = 'A';
+            break;
+        case 11:
+            chars[0] = 'B';
+            break;
+        case 12:
+            chars[0] = 'C';
+            break;
+        case 13:
+            chars[0] = 'D';
+            break;
+        case 14:
+            chars[0] = 'E';
+            break;
+        case 15:
+            chars[0] = 'F';
+            break;
         }
         switch (low) {
-            case 0:
-                chars[1] = '0';
-                break;
-            case 1:
-                chars[1] = '1';
-                break;
-            case 2:
-                chars[1] = '2';
-                break;
-            case 3:
-                chars[1] = '3';
-                break;
-            case 4:
-                chars[1] = '4';
-                break;
-            case 5:
-                chars[1] = '5';
-                break;
-            case 6:
-                chars[1] = '6';
-                break;
-            case 7:
-                chars[1] = '7';
-                break;
-            case 8:
-                chars[1] = '8';
-                break;
-            case 9:
-                chars[1] = '9';
-                break;
-            case 10:
-                chars[1] = 'A';
-                break;
-            case 11:
-                chars[1] = 'B';
-                break;
-            case 12:
-                chars[1] = 'C';
-                break;
-            case 13:
-                chars[1] = 'D';
-                break;
-            case 14:
-                chars[1] = 'E';
-                break;
-            case 15:
-                chars[1] = 'F';
-                break;
+        case 0:
+            chars[1] = '0';
+            break;
+        case 1:
+            chars[1] = '1';
+            break;
+        case 2:
+            chars[1] = '2';
+            break;
+        case 3:
+            chars[1] = '3';
+            break;
+        case 4:
+            chars[1] = '4';
+            break;
+        case 5:
+            chars[1] = '5';
+            break;
+        case 6:
+            chars[1] = '6';
+            break;
+        case 7:
+            chars[1] = '7';
+            break;
+        case 8:
+            chars[1] = '8';
+            break;
+        case 9:
+            chars[1] = '9';
+            break;
+        case 10:
+            chars[1] = 'A';
+            break;
+        case 11:
+            chars[1] = 'B';
+            break;
+        case 12:
+            chars[1] = 'C';
+            break;
+        case 13:
+            chars[1] = 'D';
+            break;
+        case 14:
+            chars[1] = 'E';
+            break;
+        case 15:
+            chars[1] = 'F';
+            break;
         }
         return new String(chars);
     }

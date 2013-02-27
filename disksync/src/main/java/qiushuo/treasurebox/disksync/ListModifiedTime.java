@@ -4,7 +4,7 @@
 package qiushuo.treasurebox.disksync;
 
 /**
- * @author <a href="mailto:QiuShuo1985@gmail.com">QIU Shuo</a>
+ * @author <a href="mailto:shuo.qius@gmail.com">QIU Shuo</a>
  */
 public class ListModifiedTime {
 

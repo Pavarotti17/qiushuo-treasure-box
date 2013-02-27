@@ -10,7 +10,7 @@ import java.io.InputStreamReader;
  * clean windows' invalid file or dir<br/>
  * (created at 2010-8-23)
  * 
- * @author <a href="mailto:QiuShuo1985@gmail.com">QIU Shuo</a>
+ * @author <a href="mailto:shuo.qius@gmail.com">QIU Shuo</a>
  */
 public class WindowsTrashFileCleaner {
     private static boolean delete = false;
