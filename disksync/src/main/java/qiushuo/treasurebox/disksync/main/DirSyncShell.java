@@ -19,7 +19,7 @@ import qiushuo.treasurebox.disksync.handler.SyncHandler;
  * 
  * @author <a href="mailto:shuo.qius@gmail.com">QIU Shuo</a>
  */
-public class Shell {
+public class DirSyncShell {
     private static Map<String, CommandHandler> handlers = new TreeMap<String, CommandHandler>();
     static {
         handlers.put("cd", new CDHandler());
@@ -30,7 +30,7 @@ public class Shell {
     }
 
     public static void main(String[] args) throws Exception {
-        new Shell().run();
+        new DirSyncShell().run();
     }
 
     private void run() throws Exception {
@@ -68,11 +68,11 @@ public class Shell {
 
     private String workRoot;
 
-    private Shell() throws Exception {
+    private DirSyncShell() throws Exception {
         workRoot = new File(".").getCanonicalPath();
     }
 
-    public Shell setWorkRoot(String workRoot) {
+    public DirSyncShell setWorkRoot(String workRoot) {
         this.workRoot = workRoot;
         return this;
     }

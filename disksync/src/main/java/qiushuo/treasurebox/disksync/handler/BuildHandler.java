@@ -19,7 +19,7 @@ import qiushuo.treasurebox.disksync.common.Confirm;
 import qiushuo.treasurebox.disksync.common.FileSystemVisitor;
 import qiushuo.treasurebox.disksync.common.FileVisitor;
 import qiushuo.treasurebox.disksync.common.StringUtils;
-import qiushuo.treasurebox.disksync.main.Shell;
+import qiushuo.treasurebox.disksync.main.DirSyncShell;
 import qiushuo.treasurebox.disksync.model.FileContent;
 import qiushuo.treasurebox.disksync.model.IndexFileUtil;
 
@@ -34,7 +34,7 @@ public class BuildHandler extends PathArgumentsHandler {
     private Set<String> emptyDir;
 
     @Override
-    public synchronized void handle(Shell shell, String cmdArg, BufferedReader sin) throws Exception {
+    public synchronized void handle(DirSyncShell shell, String cmdArg, BufferedReader sin) throws Exception {
         arguments = cmdArg;
         String rootPath = parserPath();
         rootPath = rootPath.trim();

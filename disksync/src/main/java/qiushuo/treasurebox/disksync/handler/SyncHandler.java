@@ -24,7 +24,7 @@ import java.io.File;
 import qiushuo.treasurebox.disksync.common.CommandHandler;
 import qiushuo.treasurebox.disksync.common.Confirm;
 import qiushuo.treasurebox.disksync.common.StringUtils;
-import qiushuo.treasurebox.disksync.main.Shell;
+import qiushuo.treasurebox.disksync.main.DirSyncShell;
 
 /**
  * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
@@ -32,7 +32,7 @@ import qiushuo.treasurebox.disksync.main.Shell;
 public class SyncHandler implements CommandHandler {
 
     @Override
-    public void handle(Shell shell, String cmdArg, BufferedReader sin) throws Exception {
+    public void handle(DirSyncShell shell, String cmdArg, BufferedReader sin) throws Exception {
         System.out.println("src dir path(e.g. F:\\Movie):");
         String line = sin.readLine().trim();
         File srcDir = new File(line);

@@ -2,7 +2,7 @@ package qiushuo.treasurebox.disksync.common;
 
 import java.io.BufferedReader;
 
-import qiushuo.treasurebox.disksync.main.Shell;
+import qiushuo.treasurebox.disksync.main.DirSyncShell;
 
 /**
  * (created at 2011-11-4)<br/>
@@ -16,7 +16,7 @@ public interface CommandHandler {
      * @param cmdArg sub-string after cmd. e.g. for "cd /abc/eft", param is
      *            " /abc/eft"
      */
-    void handle(Shell shell, String cmdArg, BufferedReader sin) throws Exception;
+    void handle(DirSyncShell shell, String cmdArg, BufferedReader sin) throws Exception;
 
     String help(int indent);
 }
