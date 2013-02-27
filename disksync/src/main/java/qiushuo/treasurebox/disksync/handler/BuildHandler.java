@@ -9,17 +9,17 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
-import qiushuo.treasurebox.disksync.Shell;
 import qiushuo.treasurebox.disksync.common.Config;
 import qiushuo.treasurebox.disksync.common.Confirm;
 import qiushuo.treasurebox.disksync.common.FileSystemVisitor;
 import qiushuo.treasurebox.disksync.common.FileVisitor;
 import qiushuo.treasurebox.disksync.common.StringUtils;
+import qiushuo.treasurebox.disksync.main.Shell;
 import qiushuo.treasurebox.disksync.model.FileContent;
 import qiushuo.treasurebox.disksync.model.IndexFileUtil;
 
@@ -28,10 +28,8 @@ import qiushuo.treasurebox.disksync.model.IndexFileUtil;
  * 
  * @author <a href="mailto:shuo.qius@gmail.com">QIU Shuo</a>
  */
+@SuppressWarnings("unchecked")
 public class BuildHandler extends PathArgumentsHandler {
-    private static final String INDEX_FILE_NAME = ".fileContentIndex.qs";
-    /** already exist */
-    private Map<String, FileContent> oldMap;
     private Map<String, FileContent> fileMap;
     private Set<String> emptyDir;
 
@@ -54,19 +52,22 @@ public class BuildHandler extends PathArgumentsHandler {
         build(root);
     }
 
+    /**
+     * @return key: {@link FileContent#getPath()}
+     */
     public Map<String, FileContent> getFileMap() {
-        return this.fileMap;
+        return (Map<String, FileContent>) (fileMap == null ? Collections.emptyMap() : fileMap);
     }
 
     public Set<String> getEmptyDir() {
-        return this.emptyDir;
+        return (Set<String>) (emptyDir == null ? Collections.emptySet() : emptyDir);
     }
 
     public void build(final File root) throws Exception {
-        File indexFile = new File(root, INDEX_FILE_NAME);
+        File indexFile = new File(root, Config.INDEX_FILE_NAME);
+        final Map<String, FileContent> oldMap = new TreeMap<String, FileContent>();
         //build oldMap
         if (indexFile.exists()) {
-            oldMap = new HashMap<String, FileContent>();
             FileInputStream fin = null;
             try {
                 BufferedReader in = new BufferedReader(new InputStreamReader(
@@ -88,8 +89,6 @@ public class BuildHandler extends PathArgumentsHandler {
                 } catch (Exception e) {
                 }
             }
-        } else {
-            oldMap = Collections.emptyMap();
         }
 
         //build newMap
@@ -114,7 +113,7 @@ public class BuildHandler extends PathArgumentsHandler {
                 @Override
                 public void visitFile(File file) throws Exception {
                     if (root.getAbsolutePath().equals(file.getParentFile().getAbsolutePath())
-                            && INDEX_FILE_NAME.equals(file.getName())) {
+                            && Config.INDEX_FILE_NAME.equals(file.getName())) {
                         return;
                     }
                     FileContent fc = checkExists(file);
@@ -122,7 +121,7 @@ public class BuildHandler extends PathArgumentsHandler {
                         fc = IndexFileUtil.buildIndexFileContent(root, file);
                     }
                     if (fileMap == null) {
-                        fileMap = new HashMap<String, FileContent>();
+                        fileMap = new TreeMap<String, FileContent>();
                     }
                     fileMap.put(fc.getPath(), fc);
                     out.print(fc.toString());
@@ -134,7 +133,7 @@ public class BuildHandler extends PathArgumentsHandler {
                     File[] list = dir.listFiles();
                     if (list == null || list.length == 0) {
                         if (emptyDir == null) {
-                            emptyDir = new HashSet<String>();
+                            emptyDir = new TreeSet<String>();
                         }
                         emptyDir.add(StringUtils.getRelevantPath(root, dir) + Config.INDEX_FILE_PATH_SEPERATOR);
                         String indexString = IndexFileUtil.getIndexString4EmptyDir(root, dir);
@@ -150,7 +149,6 @@ public class BuildHandler extends PathArgumentsHandler {
                 fout.close();
             } catch (Exception e) {
             }
-            oldMap = null;
         }
     }
 

@@ -2,7 +2,7 @@ package qiushuo.treasurebox.disksync.common;
 
 import java.io.BufferedReader;
 
-import qiushuo.treasurebox.disksync.Shell;
+import qiushuo.treasurebox.disksync.main.Shell;
 
 /**
  * (created at 2011-11-4)<br/>

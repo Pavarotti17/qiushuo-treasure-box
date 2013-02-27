@@ -3,9 +3,9 @@ package qiushuo.treasurebox.disksync.handler;
 import java.io.BufferedReader;
 import java.io.File;
 
-import qiushuo.treasurebox.disksync.Shell;
 import qiushuo.treasurebox.disksync.common.CommandHandler;
 import qiushuo.treasurebox.disksync.common.StringUtils;
+import qiushuo.treasurebox.disksync.main.Shell;
 
 /**
  * (created at 2011-11-4)

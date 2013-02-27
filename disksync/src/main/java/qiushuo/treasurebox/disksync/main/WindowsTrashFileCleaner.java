@@ -1,4 +1,4 @@
-package qiushuo.treasurebox.disksync;
+package qiushuo.treasurebox.disksync.main;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,9 +13,42 @@ import java.io.InputStreamReader;
  * @author <a href="mailto:shuo.qius@gmail.com">QIU Shuo</a>
  */
 public class WindowsTrashFileCleaner {
-    private static boolean delete = false;
+    private final boolean delete;
+
+    /**
+     * @param delete true: delete file whose file name is invalid; false: not
+     *            delete those files, just print it
+     */
+    public WindowsTrashFileCleaner(boolean delete) {
+        this.delete = delete;
+    }
+
+    public boolean cleanInsideDir(File dir) {
+        File[] fs = dir.listFiles();
+        if (fs == null || fs.length <= 0)
+            return false;
+        boolean cleaned = false;
+        for (File f : fs) {
+            if (!validName(f)) {
+                dealDirFile(f);
+                cleaned = true;
+            } else if (f.isDirectory()) {
+                cleaned = cleanInsideDir(f) || cleaned;
+            }
+        }
+        return cleaned;
+    }
+
+    private void dealDirFile(File f) {
+        if (!delete) {
+            System.out.println(f.getAbsolutePath());
+        } else {
+            dealQuietly(f);
+        }
+    }
 
     public static void main(String[] args) throws IOException {
+        printHelp();
         BufferedReader sin = new BufferedReader(new InputStreamReader(System.in));
         while (true) {
             System.out.print("\r\n>>");
@@ -35,42 +68,13 @@ public class WindowsTrashFileCleaner {
             String cmd = line.substring(0, ind).trim();
             String arg = line.substring(ind + 1);
             if ("print".equalsIgnoreCase(cmd)) {
-                delete = false;
-                cleanDir(new File(arg));
+                new WindowsTrashFileCleaner(false).cleanInsideDir(new File(arg));
             } else if ("delete".equalsIgnoreCase(cmd)) {
-                delete = true;
-                cleanDir(new File(arg));
+                new WindowsTrashFileCleaner(true).cleanInsideDir(new File(arg));
             } else {
                 printHelp();
                 continue;
             }
-        }
-    }
-
-    private static void printHelp() {
-        System.out.println("\t'print\t${path}' for print invalid files under ${path}");
-        System.out.println("\t'delete\t${path}' for delete invalid files under ${path}");
-        System.out.println("\t'exit' for quit");
-    }
-
-    private static void cleanDir(File dir) {
-        File[] fs = dir.listFiles();
-        if (fs == null || fs.length <= 0)
-            return;
-        for (File f : fs) {
-            if (!validName(f)) {
-                dealDirFile(f);
-            } else if (f.isDirectory()) {
-                cleanDir(f);
-            }
-        }
-    }
-
-    private static void dealDirFile(File f) {
-        if (!delete) {
-            System.out.println(f.getAbsolutePath());
-        } else {
-            dealQuietly(f);
         }
     }
 
@@ -158,5 +162,11 @@ public class WindowsTrashFileCleaner {
                 throw new IOException(message);
             }
         }
+    }
+
+    private static void printHelp() {
+        System.out.println("\t'print\t${path}' for print invalid files under ${path}");
+        System.out.println("\t'delete\t${path}' for delete invalid files under ${path}");
+        System.out.println("\t'exit' for quit");
     }
 }

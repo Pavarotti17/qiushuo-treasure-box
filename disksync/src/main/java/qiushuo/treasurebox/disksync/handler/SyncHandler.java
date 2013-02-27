@@ -21,10 +21,10 @@ package qiushuo.treasurebox.disksync.handler;
 import java.io.BufferedReader;
 import java.io.File;
 
-import qiushuo.treasurebox.disksync.Shell;
 import qiushuo.treasurebox.disksync.common.CommandHandler;
 import qiushuo.treasurebox.disksync.common.Confirm;
 import qiushuo.treasurebox.disksync.common.StringUtils;
+import qiushuo.treasurebox.disksync.main.Shell;
 
 /**
  * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
