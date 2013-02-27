@@ -5,7 +5,7 @@ import java.io.File;
 
 import qiushuo.treasurebox.disksync.common.CommandHandler;
 import qiushuo.treasurebox.disksync.common.StringUtils;
-import qiushuo.treasurebox.disksync.main.Shell;
+import qiushuo.treasurebox.disksync.main.DirSyncShell;
 
 /**
  * (created at 2011-11-4)
@@ -15,7 +15,7 @@ import qiushuo.treasurebox.disksync.main.Shell;
 public class LLHandler implements CommandHandler {
 
     @Override
-    public void handle(Shell shell, String cmdArg, BufferedReader sin) throws Exception {
+    public void handle(DirSyncShell shell, String cmdArg, BufferedReader sin) throws Exception {
         File dir = new File(shell.getWorkRoot());
         if (dir.isDirectory()) {
             File[] fs = dir.listFiles();
