@@ -17,7 +17,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * (created at 2010-11-4)
  * 
- * @author <a href="mailto:QiuShuo1985@gmail.com">QIU Shuo</a>
+ * @author <a href="mailto:shuo.qius@gmail.com">QIU Shuo</a>
  */
 public class DirCopy {
     private static final boolean COPY_DIR_ONLY = false;

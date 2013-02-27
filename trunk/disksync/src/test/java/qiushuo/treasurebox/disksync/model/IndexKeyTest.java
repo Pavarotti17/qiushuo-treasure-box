@@ -8,7 +8,7 @@ import junit.framework.TestCase;
 /**
  * (created at 2011-11-7)
  * 
- * @author <a href="mailto:QiuShuo1985@gmail.com">QIU Shuo</a>
+ * @author <a href="mailto:shuo.qius@gmail.com">QIU Shuo</a>
  */
 public class IndexKeyTest extends TestCase {
     public void testMd5() throws Exception {

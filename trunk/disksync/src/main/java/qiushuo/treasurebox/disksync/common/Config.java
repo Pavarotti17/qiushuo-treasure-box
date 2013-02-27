@@ -3,7 +3,7 @@ package qiushuo.treasurebox.disksync.common;
 /**
  * (created at 2013-1-11)
  * 
- * @author <a href="mailto:QiuShuo1985@gmail.com">QIU Shuo</a>
+ * @author <a href="mailto:shuo.qius@gmail.com">QIU Shuo</a>
  */
 public interface Config {
     String INDEX_FILE_PATH_SEPERATOR = "/";

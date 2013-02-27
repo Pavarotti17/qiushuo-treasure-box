@@ -9,7 +9,7 @@ import qiushuo.treasurebox.disksync.Shell;
  * MUST contain a constructor without parameter<br/>
  * NOT thread-safe
  * 
- * @author <a href="mailto:QiuShuo1985@gmail.com">QIU Shuo</a>
+ * @author <a href="mailto:shuo.qius@gmail.com">QIU Shuo</a>
  */
 public interface CommandHandler {
     /**

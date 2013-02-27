@@ -12,7 +12,7 @@ import qiushuo.treasurebox.disksync.common.StringUtils;
 /**
  * (created at 2013-1-10)
  * 
- * @author <a href="mailto:QiuShuo1985@gmail.com">QIU Shuo</a>
+ * @author <a href="mailto:shuo.qius@gmail.com">QIU Shuo</a>
  */
 public class IndexFileUtil {
     private static final byte[] READ_BUF = new byte[Config.READ_FILE_BUFFER_LEN];

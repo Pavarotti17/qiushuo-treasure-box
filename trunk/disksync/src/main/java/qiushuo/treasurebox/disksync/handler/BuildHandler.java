@@ -26,7 +26,7 @@ import qiushuo.treasurebox.disksync.model.IndexFileUtil;
 /**
  * (created at 2011-11-7)
  * 
- * @author <a href="mailto:QiuShuo1985@gmail.com">QIU Shuo</a>
+ * @author <a href="mailto:shuo.qius@gmail.com">QIU Shuo</a>
  */
 public class BuildHandler extends PathArgumentsHandler {
     private static final String INDEX_FILE_NAME = ".fileContentIndex.qs";
