@@ -20,6 +20,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author <a href="mailto:shuo.qius@gmail.com">QIU Shuo</a>
  */
 public class DirCopy {
+    private static final int DEFAULT_BUFFER_SIZE_M = 96;
+    public static final int DEFAULT_BUFFER_SIZE = DEFAULT_BUFFER_SIZE_M * 1024 * 1024;
     private static final boolean COPY_DIR_ONLY = false;
     private static SimpleDateFormat df = new SimpleDateFormat("[yyyy-MM-dd,HH:mm:ss] ");
 
@@ -123,7 +125,7 @@ public class DirCopy {
      * -Xms240m -Xmx240m -Xmn24m -Xss512k
      */
     public static void main(String[] args) throws Exception {
-        int size = 96;
+        int size = DEFAULT_BUFFER_SIZE_M;
         try {
             size = Integer.parseInt(args[0].trim());
         } catch (Exception e) {

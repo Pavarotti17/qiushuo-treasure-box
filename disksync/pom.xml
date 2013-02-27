@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
- <modelVersion>4.0.0</modelVersion>
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
- <groupId>qiushuo.treasurebox</groupId>
- <artifactId>disksync</artifactId>
- <version>1.0.0</version>
- <packaging>jar</packaging>
+  <groupId>qiushuo.treasurebox</groupId>
+  <artifactId>disksync</artifactId>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
 
- <name>Disk Synchronization ToolSet</name>
+  <name>Disk Synchronization ToolSet</name>
 
- <dependencies>
+  <dependencies><!-- 
   <dependency>
    <groupId>org.slf4j</groupId>
    <artifactId>com.springsource.slf4j.api</artifactId>
@@ -97,117 +97,117 @@
    <groupId>mysql</groupId>
    <artifactId>mysql-connector-java</artifactId>
    <version>5.1.21</version>
-  </dependency>
+  </dependency> -->
 
   <!-- test scoped dependencies -->
-  <dependency>
-   <groupId>org.junit</groupId>
-   <artifactId>com.springsource.junit</artifactId>
-   <version>3.8.2</version>
-   <scope>test</scope>
-  </dependency>
- </dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.8.2</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
- <developers>
-  <developer>
-   <name>QIU Shuo</name>
-   <id>shuo.qius</id>
-   <email>QiuShuo1985@gmail.com</email>
-   <roles>
-    <role>Developer</role>
-   </roles>
-   <timezone>+8</timezone>
-  </developer>
- </developers>
+  <developers>
+    <developer>
+      <name>QIU Shuo</name>
+      <id>shuo.qius</id>
+      <email>QiuShuo1985@gmail.com</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+      <timezone>+8</timezone>
+    </developer>
+  </developers>
 
- <build>
-  <plugins>
-   <plugin>
-    <groupId>org.codehaus.mojo</groupId>
-    <artifactId>build-helper-maven-plugin</artifactId>
-    <executions>
-     <execution>
-      <id>add-source</id>
-      <phase>generate-sources</phase>
-      <goals>
-       <goal>add-source</goal>
-      </goals>
-      <configuration>
-       <sources>
-        <source>src/main/java</source>
-        <source>src/main/webapp</source>
-        <source>src/main/resource</source>
-       </sources>
-      </configuration>
-     </execution>
-    </executions>
-   </plugin>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>src/main/java</source>
+                <source>src/main/webapp</source>
+                <source>src/main/resource</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
    <!-- Java Jar -->
-   <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-jar-plugin</artifactId>
-    <configuration>
-     <archive>
-      <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-      <addMavenDescriptor>false</addMavenDescriptor>
-     </archive>
-    </configuration>
-   </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+            <addMavenDescriptor>false</addMavenDescriptor>
+          </archive>
+        </configuration>
+      </plugin>
 
    <!-- Java Compiler -->
-   <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-compiler-plugin</artifactId>
-    <configuration>
-     <source>1.6</source>
-     <target>1.6</target>
-     <encoding>UTF-8</encoding>
-     <failOnError>false</failOnError>
-    </configuration>
-   </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+          <encoding>UTF-8</encoding>
+          <failOnError>false</failOnError>
+        </configuration>
+      </plugin>
 
    <!-- Jar package resource -->
-   <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-source-plugin</artifactId>
-    <executions>
-     <execution>
-      <id>attach-sources</id>
-      <goals>
-       <goal>jar</goal>
-      </goals>
-     </execution>
-    </executions>
-    <configuration>
-     <attach>true</attach>
-    </configuration>
-   </plugin>
-   <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-javadoc-plugin</artifactId>
-    <configuration>
-     <charset>UTF-8</charset>
-     <encoding>UTF-8</encoding>
-     <locale>en_US</locale>
-    </configuration>
-   </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <attach>true</attach>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <charset>UTF-8</charset>
+          <encoding>UTF-8</encoding>
+          <locale>en_US</locale>
+        </configuration>
+      </plugin>
 
    <!-- Eclipse .project generator - Don't download source -->
-   <plugin>
-    <groupId>com.alibaba.org.apache.maven.plugins</groupId>
-    <artifactId>maven-eclipse-plugin</artifactId>
-    <version>2.5.1-alibaba-0</version>
-    <configuration>
-     <downloadSources>true</downloadSources>
-     <projectTextFileEncoding>UTF-8</projectTextFileEncoding>
-    </configuration>
-   </plugin>
+      <plugin>
+        <groupId>com.alibaba.org.apache.maven.plugins</groupId>
+        <artifactId>maven-eclipse-plugin</artifactId>
+        <version>2.5.1-alibaba-0</version>
+        <configuration>
+          <downloadSources>true</downloadSources>
+          <projectTextFileEncoding>UTF-8</projectTextFileEncoding>
+        </configuration>
+      </plugin>
 
-   <plugin>
-    <groupId>org.codehaus.mojo</groupId>
-    <artifactId>cobertura-maven-plugin</artifactId>
-    <version>2.3</version>
-   </plugin>
-  </plugins>
- </build>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cobertura-maven-plugin</artifactId>
+        <version>2.3</version>
+      </plugin>
+    </plugins>
+  </build>
 </project>

@@ -61,6 +61,23 @@ public class IndexFileUtil {
     }
 
     /**
+     * @param rpath trimmed
+     */
+    public static File fromRelavant2File(File root, String rpath) {
+        File file = root;
+        for (;;) {
+            int idx = rpath.indexOf(Config.INDEX_FILE_PATH_SEPERATOR);
+            if (idx < 0) {
+                file = new File(file, rpath);
+                break;
+            }
+            file = new File(file, rpath.substring(0, idx));
+            rpath = rpath.substring(1 + idx);
+        }
+        return file;
+    }
+
+    /**
      * format: <code>[],path/</code><br/>
      * example: <code>[],China/G 5/张艺谋/</code>
      */

@@ -7,30 +7,51 @@ import qiushuo.treasurebox.disksync.common.StringUtils;
  * 
  * @author <a href="mailto:shuo.qius@gmail.com">QIU Shuo</a>
  */
-public class IndexKey {
+public class IndexKey implements Comparable<IndexKey> {
     private final byte[] md5;
-    private final int fileSize;
+    private final long fileSize;
 
-    public IndexKey(byte[] md5, int fileSize) {
-        if (md5.length < 4)
-            throw new IllegalArgumentException("md5 argument");
-        if (md5.length != 16)
+    public IndexKey(byte[] md5, long fileSize) {
+        if (md5 == null || md5.length != 16)
             throw new IllegalArgumentException("md5 byte[] length must be 16");
         this.md5 = md5;
         this.fileSize = fileSize;
     }
 
-    public IndexKey(String indexString) {
-        indexString = indexString.trim();
-        if (indexString.charAt(32) != ':')
-            throw new IllegalArgumentException("indexString format err: " + indexString);
-        this.md5 = new byte[16];
-        for (int i = 0, j = 0; i < 32; ++j) {
-            char c1 = indexString.charAt(i++);
-            char c2 = indexString.charAt(i++);
-            this.md5[j] = StringUtils.fromString2Byte(c1, c2);
+    //    public IndexKey(String indexString) {
+    //        indexString = indexString.trim();
+    //        if (indexString.charAt(32) != ':')
+    //            throw new IllegalArgumentException("indexString format err: " + indexString);
+    //        this.md5 = new byte[16];
+    //        for (int i = 0, j = 0; i < 32; ++j) {
+    //            char c1 = indexString.charAt(i++);
+    //            char c2 = indexString.charAt(i++);
+    //            this.md5[j] = StringUtils.fromString2Byte(c1, c2);
+    //        }
+    //        this.fileSize = Long.parseLong(indexString.substring(33).trim());
+    //    }
+
+    @Override
+    public int compareTo(IndexKey that) {
+        if (that == this)
+            return 0;
+        if (that == null)
+            return 1;
+        if (this.fileSize > that.fileSize) {
+            return 1;
+        } else if (this.fileSize < that.fileSize) {
+            return -1;
         }
-        this.fileSize = Integer.parseInt(indexString.substring(33).trim());
+        for (int i = 0, len = md5.length; i < len; ++i) {
+            byte b1 = this.md5[i];
+            byte b2 = that.md5[i];
+            if (b1 > b2) {
+                return 1;
+            } else if (b1 < b2) {
+                return -1;
+            }
+        }
+        return 0;
     }
 
     @Override
