@@ -20,6 +20,7 @@ import qiushuo.treasurebox.disksync.handler.SyncHandler;
  * @author <a href="mailto:shuo.qius@gmail.com">QIU Shuo</a>
  */
 public class DirSyncShell {
+    public static final DirCopy DIR_COPIER = new DirCopy(DirCopy.DEFAULT_BUFFER_SIZE);
     private static Map<String, CommandHandler> handlers = new TreeMap<String, CommandHandler>();
     static {
         handlers.put("cd", new CDHandler());
