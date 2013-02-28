@@ -73,6 +73,9 @@ public class DirCopy {
      * @param toDir toDirPath/fromDirName
      */
     public void copyDirFile(File fromFile, File toRoot) {
+        if (!toRoot.exists()) {
+            toRoot.mkdirs();
+        }
         if (fromFile.isFile()) {
             if (!COPY_DIR_ONLY) {
                 File toFile = copyFile(fromFile, toRoot);

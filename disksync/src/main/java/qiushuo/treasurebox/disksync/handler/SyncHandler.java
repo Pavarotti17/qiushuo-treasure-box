@@ -26,12 +26,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
+
+import javax.swing.event.TreeSelectionEvent;
 
 import qiushuo.treasurebox.disksync.common.CommandHandler;
 import qiushuo.treasurebox.disksync.common.Confirm;
 import qiushuo.treasurebox.disksync.common.StringUtils;
 import qiushuo.treasurebox.disksync.main.DirSyncShell;
 import qiushuo.treasurebox.disksync.model.FileContent;
+import qiushuo.treasurebox.disksync.model.IndexFileUtil;
 import qiushuo.treasurebox.disksync.model.IndexKey;
 
 /**
@@ -85,14 +89,59 @@ public class SyncHandler implements CommandHandler {
         toBuilder = null;
 
         System.out.println("index built. synchronizing...");
+
+        // delete
+        Map<IndexKey, FileContent> deleted = mapSubtract(toIndexMap, fromIndexMap);
+        for (Entry<IndexKey, FileContent> en : deleted.entrySet()) {
+            FileContent fc = en.getValue();
+            File toDelete = IndexFileUtil.fromRelavant2File(toDir, fc.getPath());
+            if (toDelete.exists()) {
+                boolean deleteSuccess = toDelete.delete();
+                if (deleteSuccess) {
+                    System.out.println("delete file: " + toDelete.getAbsolutePath());
+                } else {
+                    System.err.println("failed to delete file: " + toDelete.getAbsolutePath());
+                }
+            } else {
+                System.err.println("file to delete not found: " + toDelete.getAbsolutePath());
+            }
+        }
+        deleted = null;
+
+        // move
+        Set<IndexKey> common = intersection(fromIndexMap.keySet(), toIndexMap.keySet());
+        for (IndexKey key : common) {
+            FileContent fromFC = fromIndexMap.get(key);
+            FileContent toFC = toIndexMap.get(key);
+            File toFileOld = IndexFileUtil.fromRelavant2File(toDir, toFC.getPath());
+            File toFileNew = IndexFileUtil.fromRelavant2File(toDir, fromFC.getPath());
+            if (toFileNew.exists()) {
+                System.out.println("move file duplicated! from: " + toFileOld.getAbsolutePath() + ", to: "
+                        + toFileNew.getAbsolutePath());
+                continue;
+            }
+            File toFileNewDir = toFileNew.getParentFile();
+            if (!toFileNewDir.exists()) {
+                toFileNewDir.mkdirs();
+            }
+            if (!toFileOld.renameTo(toFileNew)) {
+                System.out.println("move file failed! from: " + toFileOld.getAbsolutePath() + ", to: "
+                        + toFileNew.getAbsolutePath());
+            }
+        }
+        common = null;
+
+        // add
         Map<IndexKey, FileContent> added = mapSubtract(fromIndexMap, toIndexMap);
         for (Entry<IndexKey, FileContent> en : added.entrySet()) {
             FileContent fc = en.getValue();
-            //QS_TODO
+            File fromFile = IndexFileUtil.fromRelavant2File(fromDir, fc.getPath());
+            File toThisDir = IndexFileUtil.fromRelavant2File(toDir, fc.getPath()).getParentFile();
+            DirSyncShell.DIR_COPIER.copyDirFile(fromFile, toThisDir);
         }
         added = null;
 
-        //QS_TODO
+        //QS_TODO empty dir, last modified, build toDir index file, check
     }
 
     private Map<IndexKey, FileContent> buildIndexMap(Map<String, FileContent> input) {
@@ -116,10 +165,24 @@ public class SyncHandler implements CommandHandler {
                 + "sync src dir to dest dir, arguments will follow the hint";
     }
 
+    private static Set<IndexKey> intersection(Set<IndexKey> s1, Set<IndexKey> s2) {
+        if (s1 == null || s2 == null || s1.isEmpty() || s2.isEmpty()) {
+            return Collections.emptySet();
+        }
+        Set<IndexKey> intersection = new TreeSet<IndexKey>();
+        for (IndexKey k : s1) {
+            if (s2.contains(k)) {
+                intersection.add(k);
+            }
+        }
+        return intersection;
+    }
+
     /**
      * might be the same reference with parameter
      * 
-     * @return map1 - map2. never null
+     * @param map1 value of this map will represented in result set
+     * @return map1 - map2. never null.
      */
     private static Map<IndexKey, FileContent> mapSubtract(Map<IndexKey, FileContent> map1,
                                                           Map<IndexKey, FileContent> map2) {
