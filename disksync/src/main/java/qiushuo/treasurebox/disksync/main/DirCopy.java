@@ -47,6 +47,41 @@ public class DirCopy {
         return false;
     }
 
+    /**
+     * delete "empty" dir
+     * <p>
+     * 1, file is not "empty"<br/>
+     * 2, dir without any child is "empty"<br/>
+     * 3, if all children of given dir are "empty", then the given dir is also
+     * "empty"
+     * </p>
+     * 
+     * @param dir root dir, might be deleted too
+     * @return true if dir represent by argument is "empty"
+     */
+    public static boolean deleteEmptyDir(File dir) {
+        if (dir.isFile())
+            return false;
+        File[] files = dir.listFiles();
+        if (files == null || files.length == 0) {
+            dir.delete();
+            return true;
+        }
+        boolean empty = true;
+        for (File f : files) {
+            empty = deleteEmptyDir(f) && empty;
+        }
+        if (empty) {
+            files = dir.listFiles();
+            if (files == null || files.length == 0) {
+                dir.delete();
+            } else {
+                System.err.println("delete empty dir err: code should not reach here for: " + dir.getAbsolutePath());
+            }
+        }
+        return empty;
+    }
+
     public static void deleteDir(File dir) {
         if (dir == null)
             return;

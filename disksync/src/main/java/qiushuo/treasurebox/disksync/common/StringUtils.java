@@ -1,7 +1,5 @@
 package qiushuo.treasurebox.disksync.common;
 
-import java.io.File;
-
 /**
  * (created at 2011-11-7)
  * 
@@ -22,15 +20,6 @@ public class StringUtils {
             nl = "\r\n";
         }
         return nl;
-    }
-
-    public static String getRelevantPath(File root, File file) {
-        String rst = file.getName();
-        for (; !file.getParentFile().getAbsolutePath().equals(root.getAbsolutePath());) {
-            file = file.getParentFile();
-            rst = file.getName() + Config.INDEX_FILE_PATH_SEPERATOR + rst;
-        }
-        return rst;
     }
 
     public static String indent(int indent) {

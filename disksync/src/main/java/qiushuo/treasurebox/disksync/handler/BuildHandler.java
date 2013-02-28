@@ -10,9 +10,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import qiushuo.treasurebox.disksync.common.Config;
 import qiushuo.treasurebox.disksync.common.Confirm;
@@ -31,7 +29,8 @@ import qiushuo.treasurebox.disksync.model.IndexFileUtil;
 @SuppressWarnings("unchecked")
 public class BuildHandler extends PathArgumentsHandler {
     private Map<String, FileContent> fileMap;
-    private Set<String> emptyDir;
+
+    //    private Set<String> emptyDir;
 
     @Override
     public synchronized void handle(DirSyncShell shell, String cmdArg, BufferedReader sin) throws Exception {
@@ -57,10 +56,6 @@ public class BuildHandler extends PathArgumentsHandler {
      */
     public Map<String, FileContent> getFileMap() {
         return (Map<String, FileContent>) (fileMap == null ? Collections.emptyMap() : fileMap);
-    }
-
-    public Set<String> getEmptyDir() {
-        return (Set<String>) (emptyDir == null ? Collections.emptySet() : emptyDir);
     }
 
     public void build(final File root) throws Exception {
@@ -100,7 +95,7 @@ public class BuildHandler extends PathArgumentsHandler {
                     Config.INDEX_FILE_ENCODE)), true);
             FileSystemVisitor.visit(root, new FileVisitor() {
                 private FileContent checkExists(File file) {
-                    String path = StringUtils.getRelevantPath(root, file);
+                    String path = IndexFileUtil.getRelevantPath(root, file);
                     FileContent fc = oldMap.get(path);
                     if (fc == null)
                         return null;
@@ -130,16 +125,17 @@ public class BuildHandler extends PathArgumentsHandler {
 
                 @Override
                 public void visitDir(File dir) throws Exception {
-                    File[] list = dir.listFiles();
-                    if (list == null || list.length == 0) {
-                        if (emptyDir == null) {
-                            emptyDir = new TreeSet<String>();
-                        }
-                        emptyDir.add(StringUtils.getRelevantPath(root, dir) + Config.INDEX_FILE_PATH_SEPERATOR);
-                        String indexString = IndexFileUtil.getIndexString4EmptyDir(root, dir);
-                        out.print(indexString);
-                        out.print(Config.INDEX_FILE_NEW_LINE);
-                    }
+                    // do nothing
+                    //                    File[] list = dir.listFiles();
+                    //                    if (list == null || list.length == 0) {
+                    //                        if (emptyDir == null) {
+                    //                            emptyDir = new TreeSet<String>();
+                    //                        }
+                    //                        emptyDir.add(StringUtils.getRelevantPath(root, dir) + Config.INDEX_FILE_PATH_SEPERATOR);
+                    //                        String indexString = IndexFileUtil.getIndexString4EmptyDir(root, dir);
+                    //                        out.print(indexString);
+                    //                        out.print(Config.INDEX_FILE_NEW_LINE);
+                    //                    }
                 }
             });
             out.flush();

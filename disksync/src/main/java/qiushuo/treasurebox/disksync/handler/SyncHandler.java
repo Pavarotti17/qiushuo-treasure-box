@@ -21,18 +21,21 @@ package qiushuo.treasurebox.disksync.handler;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import javax.swing.event.TreeSelectionEvent;
-
 import qiushuo.treasurebox.disksync.common.CommandHandler;
 import qiushuo.treasurebox.disksync.common.Confirm;
+import qiushuo.treasurebox.disksync.common.FileSystemVisitor;
+import qiushuo.treasurebox.disksync.common.FileVisitor;
 import qiushuo.treasurebox.disksync.common.StringUtils;
+import qiushuo.treasurebox.disksync.main.DirCopy;
 import qiushuo.treasurebox.disksync.main.DirSyncShell;
 import qiushuo.treasurebox.disksync.model.FileContent;
 import qiushuo.treasurebox.disksync.model.IndexFileUtil;
@@ -78,7 +81,6 @@ public class SyncHandler implements CommandHandler {
         System.out.println("building fromDir index: " + fromDir.getAbsolutePath());
         BuildHandler fromBuilder = new BuildHandler();
         fromBuilder.build(fromDir);
-        final Set<String> emptyDirs = fromBuilder.getEmptyDir();
         final Map<IndexKey, FileContent> fromIndexMap = buildIndexMap(fromBuilder.getFileMap());
         fromBuilder = null;
 
@@ -141,7 +143,35 @@ public class SyncHandler implements CommandHandler {
         }
         added = null;
 
+        // empty dir
+        syncEmptyDir(fromDir, toDir);
+
         //QS_TODO empty dir, last modified, build toDir index file, check
+    }
+
+    private void syncEmptyDir(final File fromRoot, final File toRoot) throws Exception {
+        DirCopy.deleteEmptyDir(toRoot);
+
+        final List<File> fromEmpties = new ArrayList<File>();
+        FileSystemVisitor.visit(fromRoot, new FileVisitor() {
+            @Override
+            public void visitFile(File file) throws Exception {
+            }
+
+            @Override
+            public void visitDir(File dir) throws Exception {
+                File[] fs = dir.listFiles();
+                if (fs == null || fs.length == 0) {
+                    fromEmpties.add(dir);
+                }
+            }
+        });
+
+        for (File ed : fromEmpties) {
+            String rpath = IndexFileUtil.getRelevantPath(fromRoot, ed);
+            File newDir = IndexFileUtil.fromRelavant2File(toRoot, rpath);
+            newDir.mkdirs();
+        }
     }
 
     private Map<IndexKey, FileContent> buildIndexMap(Map<String, FileContent> input) {

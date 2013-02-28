@@ -7,7 +7,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import qiushuo.treasurebox.disksync.common.Config;
-import qiushuo.treasurebox.disksync.common.StringUtils;
 
 /**
  * (created at 2013-1-10)
@@ -57,13 +56,27 @@ public class IndexFileUtil {
             } catch (Exception e) {
             }
         }
-        return new FileContent(StringUtils.getRelevantPath(root, file), md5bytes, file.length(), file.lastModified());
+        return new FileContent(getRelevantPath(root, file), md5bytes, file.length(), file.lastModified());
+    }
+
+    public static String getRelevantPath(File root, File file) {
+        if (file.getAbsolutePath().equals(root.getAbsolutePath())) {
+            return Config.INDEX_FILE_PATH_SEPERATOR;
+        }
+        String rst = file.getName();
+        for (; !file.getParentFile().getAbsolutePath().equals(root.getAbsolutePath());) {
+            file = file.getParentFile();
+            rst = file.getName() + Config.INDEX_FILE_PATH_SEPERATOR + rst;
+        }
+        return rst;
     }
 
     /**
      * @param rpath trimmed
      */
     public static File fromRelavant2File(File root, String rpath) {
+        if (rpath == null || rpath.equals("") || rpath.equals(Config.INDEX_FILE_PATH_SEPERATOR))
+            return root;
         File file = root;
         for (;;) {
             int idx = rpath.indexOf(Config.INDEX_FILE_PATH_SEPERATOR);
@@ -77,16 +90,16 @@ public class IndexFileUtil {
         return file;
     }
 
-    /**
-     * format: <code>[],path/</code><br/>
-     * example: <code>[],China/G 5/张艺谋/</code>
-     */
-    public static String getIndexString4EmptyDir(File root, File dir) throws IOException {
-        String path = StringUtils.getRelevantPath(root, dir);
-        return new StringBuilder(4 + path.length()).append("[],")
-                                                   .append(path)
-                                                   .append(Config.INDEX_FILE_PATH_SEPERATOR)
-                                                   .toString();
-    }
+    //    /**
+    //     * format: <code>[],path/</code><br/>
+    //     * example: <code>[],China/G 5/张艺谋/</code>
+    //     */
+    //    public static String getIndexString4EmptyDir(File root, File dir) throws IOException {
+    //        String path = StringUtils.getRelevantPath(root, dir);
+    //        return new StringBuilder(4 + path.length()).append("[],")
+    //                                                   .append(path)
+    //                                                   .append(Config.INDEX_FILE_PATH_SEPERATOR)
+    //                                                   .toString();
+    //    }
 
 }
