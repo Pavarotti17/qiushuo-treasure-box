@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.UUID;
 
 import qiushuo.treasurebox.disksync.common.CommandHandler;
 import qiushuo.treasurebox.disksync.common.Confirm;
@@ -111,27 +112,52 @@ public class SyncHandler implements CommandHandler {
         deleted = null;
 
         // move
-        Set<IndexKey> common = intersection(fromIndexMap.keySet(), toIndexMap.keySet());
-        for (IndexKey key : common) {
-            FileContent fromFC = fromIndexMap.get(key);
-            FileContent toFC = toIndexMap.get(key);
-            File toFileOld = IndexFileUtil.fromRelavant2File(toDir, toFC.getPath());
-            File toFileNew = IndexFileUtil.fromRelavant2File(toDir, fromFC.getPath());
-            if (toFileNew.exists()) {
-                System.out.println("move file duplicated! from: " + toFileOld.getAbsolutePath() + ", to: "
-                        + toFileNew.getAbsolutePath());
-                continue;
+        final File tempDir = createTempDir(toDir);
+        try {
+            Set<IndexKey> common = intersection(fromIndexMap.keySet(), toIndexMap.keySet());
+            for (IndexKey key : common) {
+                FileContent fromFC = fromIndexMap.get(key);
+                FileContent toFC = toIndexMap.get(key);
+                if (fromFC.getPath().equals(toFC.getPath())) {
+                    continue;
+                }
+                File toFileOld = IndexFileUtil.fromRelavant2File(toDir, toFC.getPath());
+                File toFileTemp = IndexFileUtil.fromRelavant2File(tempDir, fromFC.getPath());
+                if (toFileTemp.exists()) {
+                    System.err.println("move file duplicated! from: " + toFileOld.getAbsolutePath() + ", to: "
+                            + toFileTemp.getAbsolutePath());
+                    continue;
+                }
+                File toFileTempDir = toFileTemp.getParentFile();
+                if (!toFileTempDir.exists())
+                    toFileTempDir.mkdirs();
+                if (!toFileOld.renameTo(toFileTemp)) {
+                    System.err.println("move file failed! from: " + toFileOld.getAbsolutePath() + ", to: "
+                            + toFileTemp.getAbsolutePath());
+                }
             }
-            File toFileNewDir = toFileNew.getParentFile();
-            if (!toFileNewDir.exists()) {
-                toFileNewDir.mkdirs();
-            }
-            if (!toFileOld.renameTo(toFileNew)) {
-                System.out.println("move file failed! from: " + toFileOld.getAbsolutePath() + ", to: "
-                        + toFileNew.getAbsolutePath());
-            }
+            common = null;
+            FileSystemVisitor.visit(tempDir, new FileVisitor() {
+                @Override
+                public void visitFile(File file) throws Exception {
+                    String rpath = IndexFileUtil.getRelevantPath(tempDir, file);
+                    File toFileNew = IndexFileUtil.fromRelavant2File(toDir, rpath);
+                    File toFileNewDir = toFileNew.getParentFile();
+                    if (!toFileNewDir.exists())
+                        toFileNewDir.mkdirs();
+                    if (!file.renameTo(toFileNew)) {
+                        System.err.println("move file failed! from: " + file.getAbsolutePath() + ", to: "
+                                + toFileNew.getAbsolutePath());
+                    }
+                }
+
+                @Override
+                public void visitDir(File dir) throws Exception {
+                }
+            });
+        } finally {
+            DirCopy.deleteDir(tempDir);
         }
-        common = null;
 
         // add
         Map<IndexKey, FileContent> added = mapSubtract(fromIndexMap, toIndexMap);
@@ -149,7 +175,16 @@ public class SyncHandler implements CommandHandler {
         //QS_TODO empty dir, last modified, build toDir index file, check
     }
 
-    private void syncEmptyDir(final File fromRoot, final File toRoot) throws Exception {
+    private static File createTempDir(File toDir) {
+        File temp = null;
+        do {
+            temp = new File(toDir, UUID.randomUUID().toString());
+        } while (temp.exists());
+        temp.mkdirs();
+        return temp;
+    }
+
+    private static void syncEmptyDir(final File fromRoot, final File toRoot) throws Exception {
         DirCopy.deleteEmptyDir(toRoot);
 
         final List<File> fromEmpties = new ArrayList<File>();
@@ -174,7 +209,7 @@ public class SyncHandler implements CommandHandler {
         }
     }
 
-    private Map<IndexKey, FileContent> buildIndexMap(Map<String, FileContent> input) {
+    private static Map<IndexKey, FileContent> buildIndexMap(Map<String, FileContent> input) {
         Map<IndexKey, FileContent> map = new TreeMap<IndexKey, FileContent>();
         for (Entry<String, FileContent> en : input.entrySet()) {
             FileContent fc = en.getValue();
