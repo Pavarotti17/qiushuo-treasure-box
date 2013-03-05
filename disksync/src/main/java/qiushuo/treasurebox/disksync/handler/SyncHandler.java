@@ -38,6 +38,7 @@ import qiushuo.treasurebox.disksync.common.FileVisitor;
 import qiushuo.treasurebox.disksync.common.StringUtils;
 import qiushuo.treasurebox.disksync.main.DirCopy;
 import qiushuo.treasurebox.disksync.main.DirSyncShell;
+import qiushuo.treasurebox.disksync.main.LastModifiedSync;
 import qiushuo.treasurebox.disksync.model.FileContent;
 import qiushuo.treasurebox.disksync.model.IndexFileUtil;
 import qiushuo.treasurebox.disksync.model.IndexKey;
@@ -172,7 +173,10 @@ public class SyncHandler implements CommandHandler {
         // empty dir
         syncEmptyDir(fromDir, toDir);
 
-        //QS_TODO empty dir, last modified, build toDir index file, check
+        // sync last modified time
+        LastModifiedSync.sync(fromDir, toDir);
+
+        //QS_TODO build toDir index file, check
     }
 
     private static File createTempDir(File toDir) {
