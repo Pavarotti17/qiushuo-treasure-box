@@ -142,7 +142,7 @@
           </execution>
         </executions>
       </plugin>
-   <!-- Java Jar -->
+   <!-- Java Jar --><!-- 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
@@ -152,7 +152,7 @@
             <addMavenDescriptor>false</addMavenDescriptor>
           </archive>
         </configuration>
-      </plugin>
+      </plugin> -->
 
    <!-- Java Compiler -->
       <plugin>
