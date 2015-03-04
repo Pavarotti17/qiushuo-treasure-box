@@ -30,202 +30,24 @@ public class Import {
       select * from (
         select tag,sum(amt) sum from (
           select b.bill_id bill_id , t.tag tag , b.gmt_create dt,-0.01*b.amount amt  
-          from toshl_bill b join toshl_tag t on b.bill_id=t.bill_id 
-          where t.tag not like '1%' and b.amount<0 and b.gmt_create>'2013-11-04' 
+          from toshl_bill b join toshl_tag t on b.bill_id=t.bill_id where t.tag not like '1%' and b.amount<0 and 
+          b.gmt_create>'2013-11-04' 
           group by b.bill_id
         ) ttt group by tag  with rollup 
       ) ttttt order by sum desc;
       
       ---- for each tag:
       select b.bill_id bill_id , t.tag tag , b.gmt_create dt,-0.01*b.amount amt , b.`desc` `desc`
-      from toshl_bill b join toshl_tag t on b.bill_id=t.bill_id 
-      where t.tag not like '1%' and b.amount<0 and b.gmt_create>'2013-11-04'
-      and t.tag='people' order by b.gmt_create desc
+      from toshl_bill b join toshl_tag t on b.bill_id=t.bill_id where t.tag not like '1%' and b.amount<0 
+      and b.gmt_create>'2013-11-04' and t.tag='people'
+      order by b.gmt_create desc
      * */
-    static {
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-    private final String url;
-    private final String user;
-    private final String password;
 
-    public Import(String url, String user, String password) {
-        this.url = url;
-        this.user = user;
-        this.password = password;
-    }
-
-    public void run(List<Bill> bills) throws Throwable {
-        Connection conn = null;
-        try {
-            conn = createConn(url, user, password);
-
-            for (Bill bill : bills) {
-                sqlWrite(
-                    conn,
-                    "insert into toshl_bill (bill_id,amount,`desc`,gmt_create) values(?,?,?,?)",
-                    new Object[] { bill.getBillId(), bill.getAmount(), bill.getDesc(),
-                            bill.getGmtCreate() });
-                for (String tag : bill.getTags()) {
-                    sqlWrite(conn, "insert into toshl_tag (bill_id,tag) values(?,?)", new Object[] {
-                            bill.getBillId(), tag });
-                }
-            }
-        } finally {
-            try {
-                conn.close();
-            } catch (Exception e) {
-            }
-        }
-    }
-
-    private int sqlWrite(Connection conn, String sql, Object[] args) throws Throwable {
-        PreparedStatement ps = null;
-        try {
-            ps = conn.prepareStatement(sql);
-            if (args != null && args.length > 0) {
-                for (int i = 0; i < args.length; ++i) {
-                    ps.setObject(i + 1, args[i]);
-                }
-            }
-            return ps.executeUpdate();
-        } finally {
-            try {
-                ps.close();
-            } catch (Exception e) {
-            }
-        }
-    }
-
-    public static void main(String[] args) throws Throwable {
-        System.out
-            .println("enter toshl report cvs path:( /Users/qiushuo/Downloads/toshl_export.csv ) ");
-        StringBuilder text = new StringBuilder();
-        FileInputStream fin = null;
-        try {
-            BufferedReader sin = new BufferedReader(new InputStreamReader(System.in));
-            String path = sin.readLine().trim();
-            fin = new FileInputStream(new File(path));
-            BufferedReader f = new BufferedReader(new InputStreamReader(fin));
-            for (String line = null; (line = f.readLine()) != null;) {
-                text.append(line);
-                text.append(NL);
-            }
-            f.close();
-        } finally {
-            try {
-                fin.close();
-            } catch (Exception e) {
-            }
-        }
-        final List<Bill> bills = parseBills(text.toString());
-        String url = "jdbc:mysql://127.0.0.1:3306/toshl?characterEncoding=utf8";
-        String user = "root";
-        String password = "";
-        System.out.println("clean data: delete from bc_control_order_64 ");
-        Connection conn = createConn(url, user, password);
-        conn.createStatement().executeUpdate("delete from toshl_bill");
-        conn.createStatement().executeUpdate("delete from toshl_tag");
-        conn.close();
-        System.out.println("started");
-        new Import(url, user, password).run(bills);
-    }
-
-    private static Connection createConn(String url, String user, String password)
-                                                                                  throws SQLException {
-        return DriverManager.getConnection(url, user, password);
-    }
-
-    private static final char NL = '\n';
-
-    public static List<Bill> parseBills(String text) {
-        int i = 0;
-        for (; i < text.length(); ++i) {
-            char c = text.charAt(i);
-            if (c == NL) {
-                break;
-            }
-        }
-        ++i;
-        List<Bill> list = new ArrayList<Bill>();
-        for (; i < text.length();) {
-            if (!hasNext(text, i)) {
-                break;
-            }
-            StringBuilder sb = new StringBuilder();
-            i = readQuote(text, i, sb);
-            String date = sb.toString();
-
-            sb = new StringBuilder();
-            i = readQuote(text, i, sb);
-            String tags = sb.toString();
-
-            sb = new StringBuilder();
-            i = readQuote(text, i, sb);
-            String expAmt = sb.toString();
-
-            sb = new StringBuilder();
-            i = readQuote(text, i, sb);
-            String incAmt = sb.toString();
-
-            sb = new StringBuilder();
-            i = readQuote(text, i, sb);
-            String currency = sb.toString();
-
-            sb = new StringBuilder();
-            i = readQuote(text, i, sb);
-            String currencyAmt = sb.toString();
-
-            sb = new StringBuilder();
-            i = readQuote(text, i, sb);
-            String mainCurrency = sb.toString();
-
-            sb = new StringBuilder();
-            i = readQuote(text, i, sb);
-            String desc = sb.toString();
-
-            Bill bill = new Bill().autoSet(date, tags, expAmt, incAmt, currency, currencyAmt,
-                mainCurrency, desc);
-            System.out.println(bill);
-
-            list.add(bill);
-        }
-
-        return list;
-    }
-
-    private static boolean hasNext(String text, int i) {
-        for (; i < text.length(); ++i) {
-            if ('"' == text.charAt(i)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static int readQuote(String text, int i, StringBuilder sb) {
-        for (; i < text.length(); ++i) {
-            char c = text.charAt(i);
-            if ('"' == c) {
-                ++i;
-                break;
-            }
-        }
-
-        for (; i < text.length(); ++i) {
-            char c = text.charAt(i);
-            if ('"' == c) {
-                break;
-            }
-            sb.append(c);
-        }
-
-        return ++i;
-    }
+    /** every bill can has maximunly {@value #MAX_TAG} tags */
+    private static final int    MAX_TAG     = 2;
+    private static final String DB_URL      = "jdbc:mysql://127.0.0.1:3306/toshl?characterEncoding=utf8";
+    private static final String DB_USER     = "root";
+    private static final String DB_PASSWORD = "";
 
     static class Bill {
         private static final Random rnd  = new Random();
@@ -277,6 +99,7 @@ public class Import {
          */
         public Bill setTags(Set<String> tags) {
             this.tags = tags;
+            checkTagsNumber();
             return this;
         }
 
@@ -291,6 +114,7 @@ public class Import {
             for (String tag : tagList) {
                 this.tags.add(tag.trim());
             }
+            checkTagsNumber();
             return this;
         }
 
@@ -299,6 +123,7 @@ public class Import {
                 this.tags = new HashSet<String>(1, 1);
             }
             this.tags.add(tag);
+            checkTagsNumber();
             return this;
         }
 
@@ -312,7 +137,7 @@ public class Import {
         }
 
         /**
-         * <code>"20140904AKX9E1WP"</code>
+         * <code>"20140929AKX9E1WP"</code>
          * 
          * @param date e.g. "20140929"
          */
@@ -334,6 +159,14 @@ public class Import {
             }
             this.billId = sb.toString();
             return this;
+        }
+
+        private void checkTagsNumber() {
+            if (tags != null) {
+                if (tags.size() > MAX_TAG) {
+                    throw new IllegalArgumentException("too much tags for " + this);
+                }
+            }
         }
 
         /**
@@ -414,4 +247,250 @@ public class Import {
 
     }
 
+    private final String url;
+    private final String user;
+    private final String password;
+
+    public Import(String url, String user, String password) {
+        this.url = url;
+        this.user = user;
+        this.password = password;
+    }
+
+    public void run(List<Bill> bills) throws Throwable {
+        cleanData();
+
+        System.out.println("start imported");
+        Connection conn = null;
+        try {
+            conn = createConn(url, user, password);
+
+            for (Bill bill : bills) {
+                System.out.println(bill);
+                sqlWrite(
+                    conn,
+                    "insert into bill (bill_id,amount,`desc`,gmt_create,`type`,`event`) values(?,?,?,?,?,?)",
+                    new Object[] { bill.getBillId(), bill.getAmount(), bill.getDesc(),
+                            bill.getGmtCreate(), getType(bill), getEvent(bill) });
+                sqlWrite(
+                    conn,
+                    "insert into toshl_bill (bill_id,amount,`desc`,gmt_create) values(?,?,?,?)",
+                    new Object[] { bill.getBillId(), bill.getAmount(), bill.getDesc(),
+                            bill.getGmtCreate() });
+                for (String tag : bill.getTags()) {
+                    sqlWrite(conn, "insert into toshl_tag (bill_id,tag) values(?,?)", new Object[] {
+                            bill.getBillId(), tag });
+                }
+            }
+        } finally {
+            try {
+                conn.close();
+            } catch (Exception e) {
+            }
+        }
+    }
+
+    private String getType(Bill bill) {
+        Set<String> tags = bill.getTags();
+        if (tags == null || tags.isEmpty()) {
+            return null;
+        }
+        for (String t : tags) {
+            if (!"1".equals(t.substring(0, 1))) {
+                return t;
+            }
+        }
+        return null;
+    }
+
+    private String getEvent(Bill bill) {
+        Set<String> tags = bill.getTags();
+        if (tags == null || tags.isEmpty()) {
+            return null;
+        }
+        for (String t : tags) {
+            if ("1".equals(t.substring(0, 1))) {
+                return t;
+            }
+        }
+        return null;
+    }
+
+    private void cleanData() throws Throwable {
+        System.out.println("clean data ");
+        Connection conn = createConn(url, user, password);
+        conn.createStatement().executeUpdate("delete from toshl_bill");
+        conn.createStatement().executeUpdate("delete from toshl_tag");
+        conn.createStatement().executeUpdate("delete from bill");
+        conn.close();
+    }
+
+    private int sqlWrite(Connection conn, String sql, Object[] args) throws Throwable {
+        PreparedStatement ps = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            if (args != null && args.length > 0) {
+                for (int i = 0; i < args.length; ++i) {
+                    ps.setObject(i + 1, args[i]);
+                }
+            }
+            return ps.executeUpdate();
+        } finally {
+            try {
+                ps.close();
+            } catch (Exception e) {
+            }
+        }
+    }
+
+    static {
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static List<Bill> parseBills(String text) {
+        int i = 0;
+        for (; i < text.length(); ++i) {
+            char c = text.charAt(i);
+            if (c == NL) {
+                break;
+            }
+        }
+        ++i;
+        List<Bill> list = new ArrayList<Bill>();
+        for (; i < text.length();) {
+            if (!hasNext(text, i)) {
+                break;
+            }
+            StringBuilder sb = new StringBuilder();
+            i = readQuote(text, i, sb);
+            String date = sb.toString();
+
+            sb = new StringBuilder();
+            i = readQuote(text, i, sb);
+            String tags = sb.toString();
+
+            sb = new StringBuilder();
+            i = readQuote(text, i, sb);
+            String expAmt = sb.toString();
+
+            sb = new StringBuilder();
+            i = readQuote(text, i, sb);
+            String incAmt = sb.toString();
+
+            sb = new StringBuilder();
+            i = readQuote(text, i, sb);
+            String currency = sb.toString();
+
+            sb = new StringBuilder();
+            i = readQuote(text, i, sb);
+            String currencyAmt = sb.toString();
+
+            sb = new StringBuilder();
+            i = readQuote(text, i, sb);
+            String mainCurrency = sb.toString();
+
+            sb = new StringBuilder();
+            i = readQuote(text, i, sb);
+            String desc = sb.toString();
+            desc=escapeNL(desc);
+            
+            
+            Bill bill = new Bill().autoSet(date, tags, expAmt, incAmt, currency, currencyAmt,
+                mainCurrency, desc);
+            System.out.println(bill);
+
+            list.add(bill);
+        }
+
+        return list;
+    }
+
+    private static String escapeNL(String str) {
+        StringBuilder sb = new StringBuilder(str.length());
+        for (int i = 0; i < str.length(); ++i) {
+            char c = str.charAt(i);
+            switch (c) {
+                case '\r':
+                    sb.append(' ');
+                    break;
+                case '\n':
+                    sb.append(';');
+                    break;
+                default:
+                    sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
+    private static final char NL = '\n';
+
+    private static boolean hasNext(String text, int i) {
+        for (; i < text.length(); ++i) {
+            if ('"' == text.charAt(i)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static int readQuote(String text, int i, StringBuilder sb) {
+        for (; i < text.length(); ++i) {
+            char c = text.charAt(i);
+            if ('"' == c) {
+                ++i;
+                break;
+            }
+        }
+
+        for (; i < text.length(); ++i) {
+            char c = text.charAt(i);
+            if ('"' == c) {
+                break;
+            }
+            sb.append(c);
+        }
+
+        return ++i;
+    }
+
+    private static Connection createConn(String url, String user, String password)
+                                                                                  throws SQLException {
+        return DriverManager.getConnection(url, user, password);
+    }
+
+    public static void main(String[] args) throws Throwable {
+        System.out
+            .println("enter toshl report cvs path:( /Users/qiushuo/Downloads/toshl_export.csv ) ");
+        StringBuilder text = new StringBuilder();
+        FileInputStream fin = null;
+        try {
+            BufferedReader sin = new BufferedReader(new InputStreamReader(System.in));
+            String path = sin.readLine().trim();
+            fin = new FileInputStream(new File(path));
+            BufferedReader f = new BufferedReader(new InputStreamReader(fin));
+            for (String line = null; (line = f.readLine()) != null;) {
+                text.append(line);
+                text.append(NL);
+            }
+            f.close();
+        } finally {
+            try {
+                fin.close();
+            } catch (Exception e) {
+            }
+        }
+        final List<Bill> bills = parseBills(text.toString());
+        String url = DB_URL;
+        String user = DB_USER;
+        String password = DB_PASSWORD;
+
+        System.out.println("started");
+        new Import(url, user, password).run(bills);
+        System.out.println("finished");
+    }
 }
