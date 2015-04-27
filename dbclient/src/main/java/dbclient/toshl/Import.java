@@ -13,6 +13,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -44,13 +45,14 @@ public class Import {
      * */
 
     /** every bill can has maximunly {@value #MAX_TAG} tags */
-    private static final int    MAX_TAG     = 2;
-    private static final String DB_URL      = "jdbc:mysql://127.0.0.1:3306/toshl?characterEncoding=utf8";
-    private static final String DB_USER     = "root";
-    private static final String DB_PASSWORD = "";
+    private static final int     MAX_TAG        = 2;
+    private static final String  DB_URL         = "jdbc:mysql://127.0.0.1:3306/toshl?characterEncoding=utf8";
+    private static final String  DB_USER        = "root";
+    private static final String  DB_PASSWORD    = "";
+    private static final boolean BILL_TAG_TABLE = false;
 
     static class Bill {
-        private static final Random rnd  = new Random();
+        private static final Random rnd       = new Random();
         /** format e.g. <code>"20140904AKX9E1WP"</code> */
         private String              billId;
         /** negative number for expense, positive number for income */
@@ -58,7 +60,8 @@ public class Import {
         /** format e.g. <code>"2014-09-04"</code> */
         private String              gmtCreate;
         private String              desc;
-        private Set<String>         tags = new HashSet<String>(1, 1);
+        private Set<String>         tags      = new HashSet<String>(1, 1);
+        private List<String>        extraTags = new ArrayList<String>(1);
 
         public Bill autoSet(String date, String tags, String exp, String inc, String currency,
                             String amt, String mainCurrency, String desc) {
@@ -66,7 +69,7 @@ public class Import {
             amt = amt.replace(",", "");
             this.gmtCreate = date;
             this.setTags(tags);
-            this.desc = desc;
+            parseExtraTags(desc);
             boolean income = inc == null || inc.trim().length() == 0;
             if (amt == null || amt.trim().length() == 0) {
                 this.amount = 0;
@@ -92,17 +95,6 @@ public class Import {
             return tags;
         }
 
-        /**
-         * Setter method for property <tt>tags</tt>.
-         * 
-         * @param tags value to be assigned to property tags
-         */
-        public Bill setTags(Set<String> tags) {
-            this.tags = tags;
-            checkTagsNumber();
-            return this;
-        }
-
         public Bill setTags(String tags) {
             if (tags == null || tags.trim().length() == 0) {
                 return this;
@@ -114,15 +106,6 @@ public class Import {
             for (String tag : tagList) {
                 this.tags.add(tag.trim());
             }
-            checkTagsNumber();
-            return this;
-        }
-
-        public Bill addTag(String tag) {
-            if (this.tags == null) {
-                this.tags = new HashSet<String>(1, 1);
-            }
-            this.tags.add(tag);
             checkTagsNumber();
             return this;
         }
@@ -147,7 +130,8 @@ public class Import {
             }
             StringBuilder sb = new StringBuilder(16);
             sb.append(date);
-            for (int i = 0; i < 8; ++i) {
+            sb.append('_');
+            for (int i = 0; i < 7; ++i) {
                 int n = rnd.nextInt(36);
                 char c = '0';
                 if (n < 10) {
@@ -169,14 +153,30 @@ public class Import {
             }
         }
 
-        /**
-         * Setter method for property <tt>billId</tt>.
-         * 
-         * @param billId value to be assigned to property billId
-         */
-        public Bill setBillId(String billId) {
-            this.billId = billId;
-            return this;
+        private void parseExtraTags(String str) {
+            this.extraTags = extractPlaceHolder(str);
+            this.desc = removePlaceHolder(str);
+        }
+
+        public String getExtraTags0() {
+            if (extraTags == null || extraTags.isEmpty()) {
+                return null;
+            }
+            return extraTags.get(0);
+        }
+
+        public String getExtraTags1() {
+            if (extraTags == null || extraTags.size() < 2) {
+                return null;
+            }
+            return extraTags.get(1);
+        }
+
+        public String getExtraTags2() {
+            if (extraTags == null || extraTags.size() < 3) {
+                return null;
+            }
+            return extraTags.get(2);
         }
 
         /**
@@ -232,7 +232,7 @@ public class Import {
          * @param desc value to be assigned to property desc
          */
         public Bill setDesc(String desc) {
-            this.desc = desc;
+            parseExtraTags(desc);
             return this;
         }
 
@@ -269,17 +269,20 @@ public class Import {
                 System.out.println(bill);
                 sqlWrite(
                     conn,
-                    "insert into bill (bill_id,amount,`desc`,gmt_create,`type`,`event`) values(?,?,?,?,?,?)",
+                    "insert into bill (bill_id,amount,`desc`,gmt_create,`type`,`event`,`tag3`,`tag4`,`tag5`) values(?,?,?,?,?,?,?,?,?)",
                     new Object[] { bill.getBillId(), bill.getAmount(), bill.getDesc(),
-                            bill.getGmtCreate(), getType(bill), getEvent(bill) });
-                sqlWrite(
-                    conn,
-                    "insert into toshl_bill (bill_id,amount,`desc`,gmt_create) values(?,?,?,?)",
-                    new Object[] { bill.getBillId(), bill.getAmount(), bill.getDesc(),
-                            bill.getGmtCreate() });
-                for (String tag : bill.getTags()) {
-                    sqlWrite(conn, "insert into toshl_tag (bill_id,tag) values(?,?)", new Object[] {
-                            bill.getBillId(), tag });
+                            bill.getGmtCreate(), getType(bill), getEvent(bill),
+                            bill.getExtraTags0(), bill.getExtraTags1(), bill.getExtraTags2() });
+                if (BILL_TAG_TABLE) {
+                    sqlWrite(
+                        conn,
+                        "insert into toshl_bill (bill_id,amount,`desc`,gmt_create) values(?,?,?,?)",
+                        new Object[] { bill.getBillId(), bill.getAmount(), bill.getDesc(),
+                                bill.getGmtCreate() });
+                    for (String tag : bill.getTags()) {
+                        sqlWrite(conn, "insert into toshl_tag (bill_id,tag) values(?,?)",
+                            new Object[] { bill.getBillId(), tag });
+                    }
                 }
             }
         } finally {
@@ -319,9 +322,11 @@ public class Import {
     private void cleanData() throws Throwable {
         System.out.println("clean data ");
         Connection conn = createConn(url, user, password);
-        conn.createStatement().executeUpdate("delete from toshl_bill");
-        conn.createStatement().executeUpdate("delete from toshl_tag");
-        conn.createStatement().executeUpdate("delete from bill");
+        if (BILL_TAG_TABLE) {
+            conn.createStatement().executeUpdate("truncate table toshl_bill");
+            conn.createStatement().executeUpdate("truncate table toshl_tag");
+        }
+        conn.createStatement().executeUpdate("truncate table bill");
         conn.close();
     }
 
@@ -396,9 +401,8 @@ public class Import {
             sb = new StringBuilder();
             i = readQuote(text, i, sb);
             String desc = sb.toString();
-            desc=escapeNL(desc);
-            
-            
+            desc = escapeNL(desc);
+
             Bill bill = new Bill().autoSet(date, tags, expAmt, incAmt, currency, currencyAmt,
                 mainCurrency, desc);
             System.out.println(bill);
@@ -406,6 +410,46 @@ public class Import {
             list.add(bill);
         }
 
+        return list;
+    }
+
+    private static String removePlaceHolder(String str) {
+        if (str == null) {
+            return null;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        int offset = 0;
+        for (int idx = 0; (idx = str.indexOf("${", offset)) >= 0;) {
+            int last = str.indexOf("}", idx + "${".length());
+            sb.append(str.substring(offset, idx)).append(' ');
+            offset = last + 1;
+        }
+        sb.append(str.substring(offset, str.length()));
+        return sb.toString();
+    }
+
+    /**
+     * extract ${xxx} from string
+     * 
+     * @param str
+     * @return
+     */
+    private static List<String> extractPlaceHolder(String str) {
+        if (str == null) {
+            return Collections.emptyList();
+        }
+        str = str.trim();
+        if (str.length() == 0) {
+            return Collections.emptyList();
+        }
+        List<String> list = new ArrayList<String>(1);
+        for (int offset = 0, idx = 0; (idx = str.indexOf("${", offset)) >= 0;) {
+            int last = str.indexOf("}", idx + "${".length());
+            String ph = str.substring(idx + "${".length(), last).trim();
+            offset = last + 1;
+            list.add(ph);
+        }
         return list;
     }
 
