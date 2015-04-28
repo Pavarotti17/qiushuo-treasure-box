@@ -46,9 +46,9 @@ public class Import {
 
     /** every bill can has maximunly {@value #MAX_TAG} tags */
     private static final int     MAX_TAG        = 2;
-    private static final String  DB_URL         = "jdbc:mysql://127.0.0.1:3306/toshl?characterEncoding=utf8";
-    private static final String  DB_USER        = "root";
-    private static final String  DB_PASSWORD    = "";
+    public static final String   DB_URL         = "jdbc:mysql://127.0.0.1:3306/toshl?characterEncoding=utf8";
+    public static final String   DB_USER        = "root";
+    public static final String   DB_PASSWORD    = "";
     private static final boolean BILL_TAG_TABLE = false;
 
     static class Bill {
@@ -247,18 +247,20 @@ public class Import {
 
     }
 
-    private final String url;
-    private final String user;
-    private final String password;
+    private final String  url;
+    private final String  user;
+    private final String  password;
+    private final boolean hey;
 
-    public Import(String url, String user, String password) {
+    public Import(String url, String user, String password, boolean hey) {
         this.url = url;
         this.user = user;
         this.password = password;
+        this.hey = hey;
     }
 
     public void run(List<Bill> bills) throws Throwable {
-        cleanData();
+        cleanData(hey);
 
         System.out.println("start imported");
         Connection conn = null;
@@ -269,7 +271,9 @@ public class Import {
                 System.out.println(bill);
                 sqlWrite(
                     conn,
-                    "insert into bill (bill_id,amount,`desc`,gmt_create,`type`,`event`,`tag3`,`tag4`,`tag5`) values(?,?,?,?,?,?,?,?,?)",
+                    "insert into "
+                            + (hey ? "bill2" : "bill")
+                            + " (bill_id,amount,`desc`,gmt_create,`type`,`event`,`sub_type`,`tag4`,`tag5`) values(?,?,?,?,?,?,?,?,?)",
                     new Object[] { bill.getBillId(), bill.getAmount(), bill.getDesc(),
                             bill.getGmtCreate(), getType(bill), getEvent(bill),
                             bill.getExtraTags0(), bill.getExtraTags1(), bill.getExtraTags2() });
@@ -319,14 +323,18 @@ public class Import {
         return null;
     }
 
-    private void cleanData() throws Throwable {
+    private void cleanData(boolean hey) throws Throwable {
         System.out.println("clean data ");
         Connection conn = createConn(url, user, password);
         if (BILL_TAG_TABLE) {
             conn.createStatement().executeUpdate("truncate table toshl_bill");
             conn.createStatement().executeUpdate("truncate table toshl_tag");
         }
-        conn.createStatement().executeUpdate("truncate table bill");
+        if (hey) {
+            conn.createStatement().executeUpdate("truncate table bill2");
+        } else {
+            conn.createStatement().executeUpdate("truncate table bill");
+        }
         conn.close();
     }
 
@@ -508,13 +516,17 @@ public class Import {
     }
 
     public static void main(String[] args) throws Throwable {
+        boolean hey = false;
         System.out
             .println("enter toshl report cvs path:( /Users/qiushuo/Downloads/toshl_export.csv ) ");
+        System.out
+            .println("enter toshl report cvs path:( /Users/qiushuo/Downloads/toshl_export_hey.csv ) ");
         StringBuilder text = new StringBuilder();
         FileInputStream fin = null;
         try {
             BufferedReader sin = new BufferedReader(new InputStreamReader(System.in));
             String path = sin.readLine().trim();
+            hey = path.contains("_hey");
             fin = new FileInputStream(new File(path));
             BufferedReader f = new BufferedReader(new InputStreamReader(fin));
             for (String line = null; (line = f.readLine()) != null;) {
@@ -534,7 +546,7 @@ public class Import {
         String password = DB_PASSWORD;
 
         System.out.println("started");
-        new Import(url, user, password).run(bills);
+        new Import(url, user, password, hey).run(bills);
         System.out.println("finished");
     }
 }
