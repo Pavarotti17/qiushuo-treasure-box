@@ -7,6 +7,7 @@ package dbclient.toshl;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -428,13 +429,15 @@ public class Import {
 
         StringBuilder sb = new StringBuilder();
         int offset = 0;
-        for (int idx = 0; (idx = str.indexOf("${", offset)) >= 0;) {
-            int last = str.indexOf("}", idx + "${".length());
+        for (int idx = 0; (idx = str.indexOf("{", offset)) >= 0;) {
+            int last = str.indexOf("}", idx + "{".length());
             sb.append(str.substring(offset, idx)).append(' ');
             offset = last + 1;
         }
         sb.append(str.substring(offset, str.length()));
-        return sb.toString();
+        String rst = sb.toString();
+        rst = rst.replace('$', ' ');
+        return rst;
     }
 
     /**
@@ -452,9 +455,9 @@ public class Import {
             return Collections.emptyList();
         }
         List<String> list = new ArrayList<String>(1);
-        for (int offset = 0, idx = 0; (idx = str.indexOf("${", offset)) >= 0;) {
-            int last = str.indexOf("}", idx + "${".length());
-            String ph = str.substring(idx + "${".length(), last).trim();
+        for (int offset = 0, idx = 0; (idx = str.indexOf("{", offset)) >= 0;) {
+            int last = str.indexOf("}", idx + "{".length());
+            String ph = str.substring(idx + "{".length(), last).trim();
             offset = last + 1;
             list.add(ph);
         }
@@ -515,19 +518,15 @@ public class Import {
         return DriverManager.getConnection(url, user, password);
     }
 
-    public static void main(String[] args) throws Throwable {
-        boolean hey = false;
-        System.out
-            .println("enter toshl report cvs path:( /Users/qiushuo/Downloads/toshl_export.csv ) ");
-        System.out
-            .println("enter toshl report cvs path:( /Users/qiushuo/Downloads/toshl_export_hey.csv ) ");
+    public static List<Bill> extractBills(String path, boolean classpath) throws Throwable {
         StringBuilder text = new StringBuilder();
-        FileInputStream fin = null;
+        InputStream fin = null;
         try {
-            BufferedReader sin = new BufferedReader(new InputStreamReader(System.in));
-            String path = sin.readLine().trim();
-            hey = path.contains("_hey");
-            fin = new FileInputStream(new File(path));
+            if (classpath) {
+                fin = Import.class.getResourceAsStream(path);
+            } else {
+                fin = new FileInputStream(new File(path));
+            }
             BufferedReader f = new BufferedReader(new InputStreamReader(fin));
             for (String line = null; (line = f.readLine()) != null;) {
                 text.append(line);
@@ -541,6 +540,25 @@ public class Import {
             }
         }
         final List<Bill> bills = parseBills(text.toString());
+        return bills;
+    }
+
+    public static void main(String[] args) throws Throwable {
+        System.out
+            .println("enter toshl report cvs path:( /Users/qiushuo/Downloads/toshl_export.csv ) ");
+        System.out
+            .println("enter toshl report cvs path:( /Users/qiushuo/Downloads/toshl_export_hey.csv ) ");
+        BufferedReader sin = new BufferedReader(new InputStreamReader(System.in));
+        String path = sin.readLine().trim();
+
+        final boolean hey = path.contains("hey");
+
+        final List<Bill> bills = new ArrayList<Import.Bill>();
+        if (hey) {
+            bills.addAll(extractBills("/dbclient/toshl/toshl_export_hey_init.csv", true));
+        }
+        bills.addAll(extractBills(path, false));
+
         String url = DB_URL;
         String user = DB_USER;
         String password = DB_PASSWORD;
