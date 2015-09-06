@@ -51,6 +51,14 @@ public class Import {
     public static final String   DB_USER        = "root";
     public static final String   DB_PASSWORD    = "";
     private static final boolean BILL_TAG_TABLE = false;
+    private static final String  DEFAULT_TYPE   = "default";
+    static {
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 
     static class Bill {
         private static final Random rnd       = new Random();
@@ -173,13 +181,6 @@ public class Import {
             return extraTags.get(1);
         }
 
-        public String getExtraTags2() {
-            if (extraTags == null || extraTags.size() < 3) {
-                return null;
-            }
-            return extraTags.get(2);
-        }
-
         /**
          * Getter method for property <tt>amount</tt>.
          * 
@@ -269,15 +270,17 @@ public class Import {
             conn = createConn(url, user, password);
 
             for (Bill bill : bills) {
+                if (getType(bill) == null) {
+                    bill.getTags().add(DEFAULT_TYPE);
+                }
                 System.out.println(bill);
                 sqlWrite(
                     conn,
-                    "insert into "
-                            + (hey ? "bill2" : "bill")
-                            + " (bill_id,amount,`desc`,gmt_create,`type`,`event`,`sub_type`,`tag4`,`tag5`) values(?,?,?,?,?,?,?,?,?)",
+                    "insert into bill"
+                            + " (bill_id,amount,`desc`,gmt_create,`type`,`event`,`sub_type`,`src`,`tag5`) values(?,?,?,?,?,?,?,?,?)",
                     new Object[] { bill.getBillId(), bill.getAmount(), bill.getDesc(),
                             bill.getGmtCreate(), getType(bill), getEvent(bill),
-                            bill.getExtraTags0(), bill.getExtraTags1(), bill.getExtraTags2() });
+                            bill.getExtraTags0(), hey ? "hey" : "we", bill.getExtraTags1() });
                 if (BILL_TAG_TABLE) {
                     sqlWrite(
                         conn,
@@ -324,6 +327,11 @@ public class Import {
         return null;
     }
 
+    private static Connection createConn(String url, String user, String password)
+                                                                                  throws SQLException {
+        return DriverManager.getConnection(url, user, password);
+    }
+
     private void cleanData(boolean hey) throws Throwable {
         System.out.println("clean data ");
         Connection conn = createConn(url, user, password);
@@ -332,9 +340,9 @@ public class Import {
             conn.createStatement().executeUpdate("truncate table toshl_tag");
         }
         if (hey) {
-            conn.createStatement().executeUpdate("truncate table bill2");
+            conn.createStatement().executeUpdate("delete from bill where src='hey'");
         } else {
-            conn.createStatement().executeUpdate("truncate table bill");
+            conn.createStatement().executeUpdate("delete from bill where src='we'");
         }
         conn.close();
     }
@@ -357,15 +365,34 @@ public class Import {
         }
     }
 
-    static {
+    private static final char NL = '\n';
+
+    public static List<Bill> extractBills(String path, boolean classpath) throws Throwable {
+        StringBuilder text = new StringBuilder();
+        InputStream fin = null;
         try {
-            Class.forName("com.mysql.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            if (classpath) {
+                fin = Import.class.getResourceAsStream(path);
+            } else {
+                fin = new FileInputStream(new File(path));
+            }
+            BufferedReader f = new BufferedReader(new InputStreamReader(fin));
+            for (String line = null; (line = f.readLine()) != null;) {
+                text.append(line);
+                text.append(NL);
+            }
+            f.close();
+        } finally {
+            try {
+                fin.close();
+            } catch (Exception e) {
+            }
         }
+        final List<Bill> bills = parseBills(text.toString());
+        return bills;
     }
 
-    public static List<Bill> parseBills(String text) {
+    private static List<Bill> parseBills(String text) {
         int i = 0;
         for (; i < text.length(); ++i) {
             char c = text.charAt(i);
@@ -482,8 +509,6 @@ public class Import {
         return sb.toString();
     }
 
-    private static final char NL = '\n';
-
     private static boolean hasNext(String text, int i) {
         for (; i < text.length(); ++i) {
             if ('"' == text.charAt(i)) {
@@ -511,36 +536,6 @@ public class Import {
         }
 
         return ++i;
-    }
-
-    private static Connection createConn(String url, String user, String password)
-                                                                                  throws SQLException {
-        return DriverManager.getConnection(url, user, password);
-    }
-
-    public static List<Bill> extractBills(String path, boolean classpath) throws Throwable {
-        StringBuilder text = new StringBuilder();
-        InputStream fin = null;
-        try {
-            if (classpath) {
-                fin = Import.class.getResourceAsStream(path);
-            } else {
-                fin = new FileInputStream(new File(path));
-            }
-            BufferedReader f = new BufferedReader(new InputStreamReader(fin));
-            for (String line = null; (line = f.readLine()) != null;) {
-                text.append(line);
-                text.append(NL);
-            }
-            f.close();
-        } finally {
-            try {
-                fin.close();
-            } catch (Exception e) {
-            }
-        }
-        final List<Bill> bills = parseBills(text.toString());
-        return bills;
     }
 
     public static void main(String[] args) throws Throwable {
