@@ -72,6 +72,61 @@ public class Import {
         private Set<String>         tags      = new HashSet<String>(1, 1);
         private List<String>        extraTags = new ArrayList<String>(1);
 
+        /**
+         * @param columns parsed element
+         * @return
+         */
+        public static Bill constructBill(List<String> columns) {
+            for (int i = 0; i < columns.size(); ++i) {
+                String s = columns.get(i);
+                s = s.trim();
+                
+                if (s.length()>0&&s.charAt(0) == '"') {
+                    s = s.substring(1, s.length() - 1);
+                    columns.set(i, s);
+                }
+            }
+            Bill b = new Bill();
+            {
+                b.genBillId(convertDate(columns.get(0)).replace("-", ""));
+            }
+            {
+                b.gmtCreate = convertDate(columns.get(0));
+                b.setTags(columns.get(3));
+                b.parseExtraTags(columns.get(9));
+            }
+            {
+                boolean isincome = true;
+                String income = columns.get(5);
+                if (income.trim().equals("0")) {
+                    isincome = false;
+                }
+                String amt = columns.get(7).replace(",", "");
+                if (amt == null || amt.trim().length() == 0) {
+                    b.amount = 0;
+                } else if (amt.indexOf('.') >= 0) {
+                    int dot = amt.indexOf('.');
+                    String amtStr = amt.substring(0, dot) + amt.substring(dot + 1);
+                    b.amount = Long.parseLong(amtStr);
+                } else {
+                    b.amount = Long.parseLong(amt + "00");
+                }
+                if (!isincome) {
+                    b.amount = b.amount * -1;
+                }
+            }
+
+            return b;
+        }
+
+        /**
+         * @param date e.g. 2015-11-12
+         * @param tags e.g. abc,def
+         * @param inc
+         * @param amt
+         * @param desc
+         * @return
+         */
         public Bill autoSet(String date, String tags, String exp, String inc, String currency,
                             String amt, String mainCurrency, String desc) {
             this.genBillId(date.replace("-", ""));
@@ -104,21 +159,6 @@ public class Import {
             return tags;
         }
 
-        public Bill setTags(String tags) {
-            if (tags == null || tags.trim().length() == 0) {
-                return this;
-            }
-            if (this.tags == null) {
-                this.tags = new HashSet<String>(1, 1);
-            }
-            String[] tagList = tags.split(",");
-            for (String tag : tagList) {
-                this.tags.add(tag.trim());
-            }
-            checkTagsNumber();
-            return this;
-        }
-
         /**
          * Getter method for property <tt>billId</tt>.
          * 
@@ -126,45 +166,6 @@ public class Import {
          */
         public String getBillId() {
             return billId;
-        }
-
-        /**
-         * <code>"20140929AKX9E1WP"</code>
-         * 
-         * @param date e.g. "20140929"
-         */
-        public Bill genBillId(String date) {
-            if (date == null || date.length() != 8) {
-                throw new IllegalArgumentException("date format must with length of 8: " + date);
-            }
-            StringBuilder sb = new StringBuilder(16);
-            sb.append(date);
-            sb.append('_');
-            for (int i = 0; i < 7; ++i) {
-                int n = rnd.nextInt(36);
-                char c = '0';
-                if (n < 10) {
-                    c = (char) ('0' + n);
-                } else {
-                    c = (char) ('A' + n - 10);
-                }
-                sb.append(c);
-            }
-            this.billId = sb.toString();
-            return this;
-        }
-
-        private void checkTagsNumber() {
-            if (tags != null) {
-                if (tags.size() > MAX_TAG) {
-                    throw new IllegalArgumentException("too much tags for " + this);
-                }
-            }
-        }
-
-        private void parseExtraTags(String str) {
-            this.extraTags = extractPlaceHolder(str);
-            this.desc = removePlaceHolder(str);
         }
 
         public String getExtraTags0() {
@@ -191,32 +192,12 @@ public class Import {
         }
 
         /**
-         * Setter method for property <tt>amount</tt>.
-         * 
-         * @param amount value to be assigned to property amount
-         */
-        public Bill setAmount(long amount) {
-            this.amount = amount;
-            return this;
-        }
-
-        /**
          * Getter method for property <tt>gmtCreate</tt>.
          * 
          * @return property value of gmtCreate
          */
         public String getGmtCreate() {
             return gmtCreate;
-        }
-
-        /**
-         * Setter method for property <tt>gmtCreate</tt>.
-         * 
-         * @param gmtCreate value to be assigned to property gmtCreate
-         */
-        public Bill setGmtCreate(String gmtCreate) {
-            this.gmtCreate = gmtCreate;
-            return this;
         }
 
         /**
@@ -228,16 +209,6 @@ public class Import {
             return desc;
         }
 
-        /**
-         * Setter method for property <tt>desc</tt>.
-         * 
-         * @param desc value to be assigned to property desc
-         */
-        public Bill setDesc(String desc) {
-            parseExtraTags(desc);
-            return this;
-        }
-
         /** 
          * @see java.lang.Object#toString()
          */
@@ -247,6 +218,55 @@ public class Import {
                    + ", desc=" + desc + ", tags=" + tags + "]";
         }
 
+        private Bill setTags(String tags) {
+            if (tags == null || tags.trim().length() == 0) {
+                return this;
+            }
+            if (this.tags == null) {
+                this.tags = new HashSet<String>(1, 1);
+            }
+            String[] tagList = tags.split(",");
+            for (String tag : tagList) {
+                this.tags.add(tag.trim());
+            }
+            if (this.tags != null) {
+                if (this.tags.size() > MAX_TAG) {
+                    throw new IllegalArgumentException("too much tags for " + this);
+                }
+            }
+            return this;
+        }
+
+        /**
+         * <code>"20140929AKX9E1WP"</code>
+         * 
+         * @param date e.g. "20140929"
+         */
+        private Bill genBillId(String date) {
+            if (date == null || date.length() != 8) {
+                throw new IllegalArgumentException("date format must with length of 8: " + date);
+            }
+            StringBuilder sb = new StringBuilder(16);
+            sb.append(date);
+            sb.append('_');
+            for (int i = 0; i < 7; ++i) {
+                int n = rnd.nextInt(36);
+                char c = '0';
+                if (n < 10) {
+                    c = (char) ('0' + n);
+                } else {
+                    c = (char) ('A' + n - 10);
+                }
+                sb.append(c);
+            }
+            this.billId = sb.toString();
+            return this;
+        }
+
+        private void parseExtraTags(String str) {
+            this.extraTags = extractPlaceHolder(str);
+            this.desc = removePlaceHolder(str);
+        }
     }
 
     private final String  url;
@@ -367,7 +387,7 @@ public class Import {
 
     private static final char NL = '\n';
 
-    public static List<Bill> extractBills(String path, boolean classpath) throws Throwable {
+    public static List<Bill> extractBillsLegacy(String path, boolean classpath) throws Throwable {
         StringBuilder text = new StringBuilder();
         InputStream fin = null;
         try {
@@ -388,11 +408,11 @@ public class Import {
             } catch (Exception e) {
             }
         }
-        final List<Bill> bills = parseBills(text.toString());
+        final List<Bill> bills = parseBillsLegacy(text.toString());
         return bills;
     }
 
-    private static List<Bill> parseBills(String text) {
+    private static List<Bill> parseBillsLegacy(String text) {
         int i = 0;
         for (; i < text.length(); ++i) {
             char c = text.charAt(i);
@@ -449,6 +469,153 @@ public class Import {
         return list;
     }
 
+    public static List<Bill> extractBills(String path, boolean classpath) throws Throwable {
+        StringBuilder text = new StringBuilder();
+        InputStream fin = null;
+        try {
+            if (classpath) {
+                fin = Import.class.getResourceAsStream(path);
+            } else {
+                fin = new FileInputStream(new File(path));
+            }
+            BufferedReader f = new BufferedReader(new InputStreamReader(fin));
+            for (String line = null; (line = f.readLine()) != null;) {
+                text.append(line);
+                text.append(NL);
+            }
+            f.close();
+        } finally {
+            try {
+                fin.close();
+            } catch (Exception e) {
+            }
+        }
+        final List<Bill> bills = classpath ? parseBillsLegacy(text.toString()) : parseBills(text
+            .toString());
+        return bills;
+    }
+
+    private static List<Bill> parseBills(String text) {
+        int i = 0;
+        // skip first row
+        for (; i < text.length(); ++i) {
+            char c = text.charAt(i);
+            if (c == NL) {
+                break;
+            }
+        }
+        ++i;
+
+        List<Bill> list = new ArrayList<Bill>();
+        for (; i < text.length();) { List<String> row = new ArrayList<String>();
+            try {
+               
+                i = readRow(text, i, row);
+                i = skipNL(text, i);
+
+                Bill bill = Bill.constructBill(row);
+                System.out.println(row);
+                System.out.println(bill);
+                list.add(bill);
+            } catch (Exception e) {
+                throw new RuntimeException("parse error: " + row, e);
+            }
+        }
+
+        return list;
+
+    }
+
+    static int readRow(String text, final int offset, List<String> list) {
+        int i = offset;
+        i = skipElement(text, i, list);
+        i = skipElementSeparator(text, i);
+        i = skipElement(text, i, list);
+        i = skipElementSeparator(text, i);
+        i = skipElement(text, i, list);
+        i = skipElementSeparator(text, i);
+        i = skipElement(text, i, list);
+        i = skipElementSeparator(text, i);
+        i = skipElement(text, i, list);
+        i = skipElementSeparator(text, i);
+        i = skipElement(text, i, list);
+        i = skipElementSeparator(text, i);
+        i = skipElement(text, i, list);
+        i = skipElementSeparator(text, i);
+        i = skipElement(text, i, list);
+        i = skipElementSeparator(text, i);
+        i = skipElement(text, i, list);
+        i = skipElementSeparator(text, i);
+        i = skipElement(text, i, list);
+        return i;
+    }
+
+    /**
+     * @return index point to char after element, -1 if EOF 
+     */
+    static int skipElement(String text, int i, List<String> list) {
+        StringBuilder sb = new StringBuilder();
+        boolean inQuota = false;
+        boolean started = false;
+        for (i = skipSpace(text, i); i < text.length(); ++i) {
+            char c = text.charAt(i);
+            if (!started) {
+                started = true;
+                if (c == ',' || c == '\n' || c == '\r') {
+                    break;
+                }
+                inQuota = c == '"';
+                sb.append(c);
+                continue;
+            }
+            if (inQuota && c == '"') {
+                ++i;
+                sb.append(c);
+                break;
+            }
+            if (!inQuota && (c == ',' || c == '\r' || c == '\n')) {
+                break;
+            }
+            sb.append(c);
+        }
+        list.add(sb.toString());
+        return i;
+    }
+
+    private static int skipNL(String text, int i) {
+        for (i = skipSpace(text, i); i < text.length(); ++i) {
+            char c = text.charAt(i);
+            switch (c) {
+                case '\r':
+                case '\n':
+                    break;
+                default:
+                    return i;
+            }
+        }
+        return i;
+    }
+
+    private static int skipElementSeparator(String text, int i) {
+        for (i = skipSpace(text, i); i < text.length(); ++i) {
+            char c = text.charAt(i);
+            if (c == ',') {
+                return ++i;
+            }
+        }
+        return i;
+    }
+
+    private static int skipSpace(String text, int i) {
+        for (; i < text.length(); ++i) {
+            char c = text.charAt(i);
+            if (c != ' ' && c != '\t') {
+                return i;
+            }
+        }
+        return i;
+    }
+
     private static String removePlaceHolder(String str) {
         if (str == null) {
             return null;
@@ -489,6 +656,43 @@ public class Import {
             list.add(ph);
         }
         return list;
+    }
+
+    /**
+     * @param date "09 Jun 2013"
+     * @return "2013-06-09"
+     */
+    private static String convertDate(String date) {
+        String[] ss = date.split(" ");
+        String day = ss[0];
+        String mon = ss[1];
+        String year = ss[2];
+        if ("Jan".equalsIgnoreCase(mon)) {
+            mon = "01";
+        } else if ("Feb".equalsIgnoreCase(mon)) {
+            mon = "02";
+        } else if ("Mar".equalsIgnoreCase(mon)) {
+            mon = "03";
+        } else if ("Apr".equalsIgnoreCase(mon)) {
+            mon = "04";
+        } else if ("May".equalsIgnoreCase(mon)) {
+            mon = "05";
+        } else if ("Jun".equalsIgnoreCase(mon)) {
+            mon = "06";
+        } else if ("Jul".equalsIgnoreCase(mon)) {
+            mon = "07";
+        } else if ("Aug".equalsIgnoreCase(mon)) {
+            mon = "08";
+        } else if ("Sep".equalsIgnoreCase(mon)) {
+            mon = "09";
+        } else if ("Oct".equalsIgnoreCase(mon)) {
+            mon = "10";
+        } else if ("Nov".equalsIgnoreCase(mon)) {
+            mon = "11";
+        } else if ("Dec".equalsIgnoreCase(mon)) {
+            mon = "12";
+        }
+        return year + "-" + mon + "-" + day;
     }
 
     private static String escapeNL(String str) {
@@ -549,7 +753,7 @@ public class Import {
         final boolean hey = path.contains("hey");
 
         final List<Bill> bills = new ArrayList<Import.Bill>();
-        if (hey) {
+        if (hey) { // init hey's legacy data
             bills.addAll(extractBills("/dbclient/toshl/toshl_export_hey_init.csv", true));
         }
         bills.addAll(extractBills(path, false));
