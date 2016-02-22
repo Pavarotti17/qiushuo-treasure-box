@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Alipay.com Inc.
@@ -31,7 +32,40 @@ public class Temp {
             "20151116000730016D1100002DSP", "20151116000730016D11000023R7",
             "20151116000730016D1100002QMH" };
 
-    public static void main(String[] args) {
+    /**
+     * @param args
+     */
+    public static void main(String[] args) throws Throwable {
+        String filePath = "/Users/qiushuo/temp/faultinject/vouchercore/userId/f_userid/rz15.txt_publish";
+        File src = new File(filePath);
+        BufferedReader fin = new BufferedReader(new FileReader(src));
+        File tar2 = new File(src.getParentFile(), src.getName() + ".tmp");
+        PrintWriter out2 = new PrintWriter(tar2);
+
+        Set<String> set = new TreeSet<String>();
+
+        int i = 0;
+        for (String line = null; (line = fin.readLine()) != null;) {
+            line = line.trim();
+            if (line.length() != 16) {
+                System.err.println(line);
+                return;
+            }
+            set.add(line);
+        }
+
+        for (String s : set) {
+            out2.println(s);
+        }
+        out2.flush();
+        out2.close();
+
+        
+//        tar2.renameTo(new File(filePath.substring(0,filePath.length() - 4)));
+
+    }
+
+    public static void main00(String[] args) {
         Set<String> set = new HashSet<String>();
         for (String t : temps) {
             set.add(t);
@@ -53,8 +87,8 @@ public class Temp {
                 list.add("|");
             }
         }
-        
-        for(String t:list){
+
+        for (String t : list) {
             System.out.println(t);
         }
 
