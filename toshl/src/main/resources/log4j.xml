@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="GBK"?>
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+    <!-- ===================================================================== -->
+    <!-- Appenders -->
+    <!-- ===================================================================== -->
+
+    <appender name="STDOUT-APPENDER" class="org.apache.log4j.ConsoleAppender">
+        <param name="encoding" value="GBK" />
+        <param name="target" value="System.out" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d [%c{2}] %m%n" />
+        </layout>
+    </appender>
+    <appender name="STDERR-APPENDER" class="org.apache.log4j.ConsoleAppender">
+        <param name="encoding" value="GBK" />
+        <param name="target" value="System.err" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d [%c{2}] %m%n" />
+        </layout>
+
+    </appender>
+
+    <!-- ===================================================================== -->
+    <!-- Loggers -->
+    <!-- ===================================================================== -->
+
+    <!-- ECHO -->
+    <logger name="qiushuo.treasurebox.toshl" additivity="false">
+        <level value="DEBUG" />
+        <appender-ref ref="STDOUT-APPENDER" />
+    </logger>
+
+    <logger name="STDOUT" additivity="false">
+        <level value="INFO" />
+        <appender-ref ref="STDOUT-APPENDER" />
+    </logger>
+
+    <logger name="STDERR" additivity="false">
+        <level value="DEBUG" />
+        <appender-ref ref="STDERR-APPENDER" />
+    </logger>
+
+    <!-- ===================================================================== -->
+    <!-- Root logger -->
+    <!-- ===================================================================== -->
+
+    <root>
+        <level value="DEBUG" />
+        <appender-ref ref="STDOUT-APPENDER" />
+        <appender-ref ref="STDERR-APPENDER" />
+    </root>
+
+</log4j:configuration>
