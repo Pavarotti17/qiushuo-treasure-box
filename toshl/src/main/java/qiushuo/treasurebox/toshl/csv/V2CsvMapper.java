@@ -18,6 +18,13 @@ import qiushuo.treasurebox.toshl.util.CommonUtil;
  */
 public class V2CsvMapper extends AbstractCsvMapper implements Function<List<String>, Bill> {
 
+    /**
+     * @param hey
+     */
+    public V2CsvMapper(boolean hey) {
+        super(hey);
+    }
+
     /** 
      * "Date",        "Account","Category","Tags", "Expense amount","Income amount","Currency","In main currency","Main currency","Description" <br/>
      * "Jun 7, 2013", 现金,      Unsorted,  CE-Mac, 588.00,          0,              CNY,       588.00,            CNY,            电源线
@@ -45,7 +52,7 @@ public class V2CsvMapper extends AbstractCsvMapper implements Function<List<Stri
         }
 
         String date = CommonUtil.convertDate(dateStr);
-        Bill b = new Bill(date);
+        Bill b = new Bill(date, hey);
         b.setAccount(accountStr);
         b.setDesc(CommonUtil.removePlaceHolder(descStr));
         b.setExtraTags(CommonUtil.extractPlaceHolder(descStr));

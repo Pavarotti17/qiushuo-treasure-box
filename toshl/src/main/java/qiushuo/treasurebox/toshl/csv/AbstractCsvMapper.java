@@ -15,6 +15,11 @@ import java.util.List;
  * @version $Id: AbstractCsvMapper.java, v 0.1 Feb 29, 2016 9:31:03 PM qiushuo Exp $
  */
 public abstract class AbstractCsvMapper {
+    protected final boolean hey;
+
+    public AbstractCsvMapper(boolean hey) {
+        this.hey = hey;
+    }
 
     /**
      * @param tags contains type and tag

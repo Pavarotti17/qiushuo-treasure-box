@@ -21,6 +21,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 public class Bill {
     public static final String DEFAULT_ACCOUNT = "cash";
 
+    private final boolean      hey;
     /** format e.g. <code>"20140904AKX9E1WP"</code> */
     private final String       billId;
     /** format e.g. <code>"2014-09-04"</code> */
@@ -36,12 +37,35 @@ public class Bill {
     /**
      * @param gmt "yyyy-MM-dd"
      */
-    public Bill(String gmt) {
+    public Bill(String gmt, boolean hey) {
         this.billId = genBillId(gmt.replace("-", "").trim());
         this.gmt = gmt;
+        this.hey = hey;
     }
 
     private static final Random rnd = new Random();
+
+    /**
+     * @return
+     */
+    public String getOnlyTag() {
+        if (this.tags == null || this.tags.isEmpty())
+            return null;
+        if (this.tags.size() > 1)
+            throw new IllegalArgumentException("tags size > 1: " + this);
+        return this.tags.iterator().next();
+    }
+
+    /**
+     * @return
+     */
+    public String getOnlyExtraTag() {
+        if (this.extraTags == null || this.extraTags.isEmpty())
+            return null;
+        if (this.extraTags.size() > 1)
+            throw new IllegalArgumentException("extraTags size > 1: " + this);
+        return this.extraTags.iterator().next();
+    }
 
     /**
      * <code>"20140929AKX9E1WP"</code>
@@ -228,6 +252,15 @@ public class Bill {
      */
     public String getDesc() {
         return desc;
+    }
+
+    /**
+     * Getter method for property <tt>hey</tt>.
+     * 
+     * @return property value of hey
+     */
+    public boolean isHey() {
+        return hey;
     }
 
 }

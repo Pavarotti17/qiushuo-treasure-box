@@ -19,10 +19,10 @@ public class BillTest extends AbstractToshlTest {
 
     @Test
     public void genBillId() {
-        Bill b = new Bill("2016-01-01");
+        Bill b = new Bill("2016-01-01", false);
         Assert.assertEquals("2016-01-01", b.getGmt());
         Assert.assertEquals("20160101", b.getBillId().substring(0, 8));
-        Assert
-            .assertNotSame(new Bill("2016-01-01").getBillId(), new Bill("2016-01-01").getBillId());
+        Assert.assertNotSame(new Bill("2016-01-01", false).getBillId(), new Bill("2016-01-01",
+            false).getBillId());
     }
 }

@@ -17,6 +17,14 @@ import qiushuo.treasurebox.toshl.util.CommonUtil;
  * @version $Id: V1CsvMapper.java, v 0.1 Feb 29, 2016 5:38:05 PM qiushuo Exp $
  */
 public class V1CsvMapper extends AbstractCsvMapper implements Function<List<String>, Bill> {
+
+    /**
+     * @param hey
+     */
+    public V1CsvMapper(boolean hey) {
+        super(hey);
+    }
+
     /**
      * date,         tags,              expAmt,  incAmt, curr,  currancyAmt, mainCurrency,desc<br/>
      * "2015-04-28", "traffic-commute", "25.00", "",     "CNY", "25.00",     "CNY",       ""
@@ -42,7 +50,7 @@ public class V1CsvMapper extends AbstractCsvMapper implements Function<List<Stri
             throw new IllegalArgumentException("currancyAmt must be CNY: " + list);
         }
 
-        Bill b = new Bill(date);
+        Bill b = new Bill(date, hey);
         boolean exp = incAmt == null || incAmt.trim().isEmpty();
         long amount = CommonUtil.convertAmount(currAmt);
         amount = exp ? -amount : amount;

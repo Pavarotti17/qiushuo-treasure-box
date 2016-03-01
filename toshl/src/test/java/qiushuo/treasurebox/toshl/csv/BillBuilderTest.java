@@ -24,12 +24,12 @@ public class BillBuilderTest extends AbstractToshlTest {
     @Test
     public void readV2() throws IOException {
         List<Bill> list = IOReader.readCsvFile("/toshl_export.csv", true, 1).stream()
-            .map(new V2CsvMapper()).collect(Collectors.toList()).stream()
+            .map(new V2CsvMapper(false)).collect(Collectors.toList()).stream()
             .collect(Collectors.toList());
-//        System.out.println(list.size());
-//        for (int i = 0; i < list.size(); ++i) {
-//            System.out.println(i + ": " + list.get(i));
-//        }
+        //        System.out.println(list.size());
+        //        for (int i = 0; i < list.size(); ++i) {
+        //            System.out.println(i + ": " + list.get(i));
+        //        }
         Assert.assertEquals(3881, list.size());
         //34: Bill[billId=20130930_VJDN4T4,gmt=2013-09-30,amount=-7897,account=现金,type=traffic-commute,tags=[1310_Philippines],extraTags=[],desc=香港机场地铁]
         Assert.assertEquals("traffic-commute", list.get(34).getType());
@@ -66,7 +66,7 @@ public class BillBuilderTest extends AbstractToshlTest {
     @Test
     public void readV1() throws IOException {
         List<Bill> list = IOReader.readCsvFile("/toshl_export_hey_init.csv", true, 1).stream()
-            .map(new V1CsvMapper()).collect(Collectors.toList()).stream()
+            .map(new V1CsvMapper(true)).collect(Collectors.toList()).stream()
             .collect(Collectors.toList());
         //        System.out.println(list.size());
         //        for (int i = 0; i < list.size(); ++i) {
