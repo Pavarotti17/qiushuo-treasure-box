@@ -10,14 +10,14 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import qiushuo.treasurebox.toshl.ToshlTest;
+import qiushuo.treasurebox.toshl.AbstractToshlTest;
 
 /**
  * 
  * @author shuo.qius
  * @version $Id: IOReaderTest.java, v 0.1 Feb 29, 2016 6:13:45 PM qiushuo Exp $
  */
-public class IOReaderTest extends ToshlTest {
+public class IOReaderTest extends AbstractToshlTest {
 
     @Test
     public void escapeCsvCol() {

@@ -2,20 +2,20 @@
  * Alipay.com Inc.
  * Copyright (c) 2004-2016 All Rights Reserved.
  */
-package qiushuo.treasurebox.toshl.model;
+package qiushuo.treasurebox.toshl;
 
 import junit.framework.Assert;
 
 import org.junit.Test;
 
-import qiushuo.treasurebox.toshl.ToshlTest;
+import qiushuo.treasurebox.toshl.Bill;
 
 /**
  * 
  * @author shuo.qius
  * @version $Id: BillTest.java, v 0.1 Feb 29, 2016 7:25:18 PM qiushuo Exp $
  */
-public class BillTest extends ToshlTest {
+public class BillTest extends AbstractToshlTest {
 
     @Test
     public void genBillId() {

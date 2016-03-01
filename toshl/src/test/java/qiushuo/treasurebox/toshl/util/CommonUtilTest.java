@@ -10,14 +10,14 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import qiushuo.treasurebox.toshl.ToshlTest;
+import qiushuo.treasurebox.toshl.AbstractToshlTest;
 
 /**
  * 
  * @author shuo.qius
  * @version $Id: CommonUtilTest.java, v 0.1 Feb 29, 2016 7:30:09 PM qiushuo Exp $
  */
-public class CommonUtilTest extends ToshlTest {
+public class CommonUtilTest extends AbstractToshlTest {
 
     @Test
     public void escapeAmount() {

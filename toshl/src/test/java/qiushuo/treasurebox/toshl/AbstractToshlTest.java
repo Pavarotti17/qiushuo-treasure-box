@@ -15,7 +15,7 @@ import junit.framework.Assert;
  * @author shuo.qius
  * @version $Id: ToshlTest.java, v 0.1 Feb 29, 2016 6:39:43 PM qiushuo Exp $
  */
-public abstract class ToshlTest {
+public abstract class AbstractToshlTest {
     /**
      * list of collection is not supported
      * 

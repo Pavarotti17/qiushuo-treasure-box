@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-import qiushuo.treasurebox.toshl.model.Bill;
+import qiushuo.treasurebox.toshl.Bill;
 import qiushuo.treasurebox.toshl.util.CommonUtil;
 
 /**

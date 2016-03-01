@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 import qiushuo.treasurebox.toshl.csv.IOReader;
 import qiushuo.treasurebox.toshl.csv.V1CsvMapper;
 import qiushuo.treasurebox.toshl.csv.V2CsvMapper;
-import qiushuo.treasurebox.toshl.model.Bill;
 import qiushuo.treasurebox.toshl.mysql.DBOutput;
 
 /**

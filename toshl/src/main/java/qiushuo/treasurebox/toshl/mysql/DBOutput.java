@@ -8,7 +8,7 @@ import java.util.Collection;
 
 import org.apache.log4j.Logger;
 
-import qiushuo.treasurebox.toshl.model.Bill;
+import qiushuo.treasurebox.toshl.Bill;
 
 /**
  * 
@@ -35,7 +35,7 @@ public class DBOutput {
      * @throws Throwable
      */
     public void output(Collection<Bill> list, boolean hey) throws Throwable{
-        
+        //QS_TODO
     }
 
 }

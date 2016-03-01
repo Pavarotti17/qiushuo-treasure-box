@@ -52,7 +52,7 @@ public class IOReader {
      */
     public static List<List<String>> readCsvFile(InputStream in, int skipLine) throws IOException {
         @SuppressWarnings("resource")
-        List<CSVRecord> list = new CSVParser(new InputStreamReader(in, "utf8"), CSVFormat.RFC4180)
+        List<CSVRecord> list = new CSVParser(new InputStreamReader(in, "utf8"), CSVFormat.DEFAULT)
             .getRecords();
         for (int i = 0; i < skipLine; ++i) {
             list.remove(0);

@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.function.Function;
 
-import qiushuo.treasurebox.toshl.model.Bill;
+import qiushuo.treasurebox.toshl.Bill;
 import qiushuo.treasurebox.toshl.util.CommonUtil;
 
 /**
@@ -47,7 +47,7 @@ public class V1CsvMapper extends AbstractCsvMapper implements Function<List<Stri
         long amount = CommonUtil.convertAmount(currAmt);
         amount = exp ? -amount : amount;
         b.setAmount(amount);
-        b.setDesc(desc);
+        b.setDesc(CommonUtil.removePlaceHolder(desc));
         b.setExtraTags(CommonUtil.extractPlaceHolder(desc));
 
         TreeSet<String> tagset = CommonUtil.splitTags(tags);
