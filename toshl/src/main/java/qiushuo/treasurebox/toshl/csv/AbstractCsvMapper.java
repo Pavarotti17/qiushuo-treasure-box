@@ -8,18 +8,36 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
+
+import qiushuo.treasurebox.toshl.Bill;
 
 /**
  * 
  * @author shuo.qius
  * @version $Id: AbstractCsvMapper.java, v 0.1 Feb 29, 2016 9:31:03 PM qiushuo Exp $
  */
-public abstract class AbstractCsvMapper {
+public abstract class AbstractCsvMapper implements Function<List<String>, Bill> {
     protected final boolean hey;
 
     public AbstractCsvMapper(boolean hey) {
         this.hey = hey;
     }
+
+    @Override
+    public Bill apply(List<String> list) {
+        try {
+            return applyInternal(list);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("failed for " + list, e);
+        }
+    }
+
+    /**
+     * @param list
+     * @return
+     */
+    protected abstract Bill applyInternal(List<String> list);
 
     /**
      * @param tags contains type and tag
@@ -41,7 +59,7 @@ public abstract class AbstractCsvMapper {
 
     /**
      * @param tags contains type and tag
-     * @return
+     * @return {@link Bill#DEFAULT_TYPE} if no availvable type found
      */
     protected String getType(Collection<String> tags) {
         if (tags == null || tags.isEmpty())
@@ -57,7 +75,7 @@ public abstract class AbstractCsvMapper {
             type = t;
         }
         if (type == null)
-            throw new IllegalArgumentException("tags donot contains type: " + tags);
+            return Bill.DEFAULT_TYPE;
         return type;
     }
 }

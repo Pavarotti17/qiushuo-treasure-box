@@ -20,6 +20,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
  */
 public class Bill {
     public static final String DEFAULT_ACCOUNT = "cash";
+    public static final String DEFAULT_TYPE    = "default";
 
     private final boolean      hey;
     /** format e.g. <code>"20140904AKX9E1WP"</code> */

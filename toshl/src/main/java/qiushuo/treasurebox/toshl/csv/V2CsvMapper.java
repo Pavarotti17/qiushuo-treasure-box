@@ -6,7 +6,6 @@ package qiushuo.treasurebox.toshl.csv;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Function;
 
 import qiushuo.treasurebox.toshl.Bill;
 import qiushuo.treasurebox.toshl.util.CommonUtil;
@@ -16,7 +15,7 @@ import qiushuo.treasurebox.toshl.util.CommonUtil;
  * @author shuo.qius
  * @version $Id: V2CsvMapper.java, v 0.1 Feb 29, 2016 9:12:42 PM qiushuo Exp $
  */
-public class V2CsvMapper extends AbstractCsvMapper implements Function<List<String>, Bill> {
+public class V2CsvMapper extends AbstractCsvMapper {
 
     /**
      * @param hey
@@ -28,11 +27,12 @@ public class V2CsvMapper extends AbstractCsvMapper implements Function<List<Stri
     /** 
      * "Date",        "Account","Category","Tags", "Expense amount","Income amount","Currency","In main currency","Main currency","Description" <br/>
      * "Jun 7, 2013", 现金,      Unsorted,  CE-Mac, 588.00,          0,              CNY,       588.00,            CNY,            电源线
-     * @see java.util.function.Function#apply(java.lang.Object)
+     * 
+     * @see qiushuo.treasurebox.toshl.csv.AbstractCsvMapper#applyInternal(java.util.List)
      */
     @SuppressWarnings("unused")
     @Override
-    public Bill apply(List<String> list) {
+    protected Bill applyInternal(List<String> list) {
         if (list == null || list.size() != 10) {
             throw new IllegalArgumentException("list must have 8 columns: " + list);
         }
@@ -80,4 +80,5 @@ public class V2CsvMapper extends AbstractCsvMapper implements Function<List<Stri
         if (!events.isEmpty())
             b.addTag(events.get(0));
     }
+
 }

@@ -6,7 +6,6 @@ package qiushuo.treasurebox.toshl.csv;
 
 import java.util.List;
 import java.util.TreeSet;
-import java.util.function.Function;
 
 import qiushuo.treasurebox.toshl.Bill;
 import qiushuo.treasurebox.toshl.util.CommonUtil;
@@ -16,7 +15,7 @@ import qiushuo.treasurebox.toshl.util.CommonUtil;
  * @author shuo.qius
  * @version $Id: V1CsvMapper.java, v 0.1 Feb 29, 2016 5:38:05 PM qiushuo Exp $
  */
-public class V1CsvMapper extends AbstractCsvMapper implements Function<List<String>, Bill> {
+public class V1CsvMapper extends AbstractCsvMapper {
 
     /**
      * @param hey
@@ -25,15 +24,15 @@ public class V1CsvMapper extends AbstractCsvMapper implements Function<List<Stri
         super(hey);
     }
 
-    /**
+    /** 
      * date,         tags,              expAmt,  incAmt, curr,  currancyAmt, mainCurrency,desc<br/>
      * "2015-04-28", "traffic-commute", "25.00", "",     "CNY", "25.00",     "CNY",       ""
      * 
-     * @see java.util.function.Function#apply(java.lang.Object)
+     * @see qiushuo.treasurebox.toshl.csv.AbstractCsvMapper#applyInternal(java.util.List)
      */
     @SuppressWarnings("unused")
     @Override
-    public Bill apply(List<String> list) {
+    protected Bill applyInternal(List<String> list) {
         if (list == null || list.size() != 8) {
             throw new IllegalArgumentException("list must have 8 columns: " + list);
         }

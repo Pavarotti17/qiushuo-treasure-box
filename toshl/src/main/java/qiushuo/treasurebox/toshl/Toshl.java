@@ -30,9 +30,9 @@ public class Toshl {
      */
     public static void main(String[] args) throws Throwable {
         System.out
-            .println("enter toshl report cvs path:( /Users/qiushuo/Downloads/toshl_export.csv ) ");
+            .println("enter toshl report cvs path: /Users/qiushuo/Downloads/toshl_export.csv ");
         System.out
-            .println("enter toshl report cvs path:( /Users/qiushuo/Downloads/toshl_export_hey.csv ) ");
+            .println("enter toshl report cvs path: /Users/qiushuo/Downloads/toshl_export_hey.csv ");
         BufferedReader sin = new BufferedReader(new InputStreamReader(System.in));
         String path = sin.readLine().trim();
 
