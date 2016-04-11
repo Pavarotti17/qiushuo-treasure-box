@@ -22,12 +22,22 @@ public class Main {
      * @param args
      */
     public static void main(String[] args) throws Throwable {
+//        String t="\uD83C\uDFBC";
+//        System.out.println(t);
+        final MainFrame frame = new MainFrame();
         EventQueue.invokeLater(() -> {
-            MainFrame frame = new MainFrame();
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setVisible(true);
         });
+
+        for (;;) {
+            sleep();
+            EventQueue.invokeLater(() -> {
+                frame.repaint();
+            });
+        }
     }
+    
 
     public static class MainFrame extends JFrame {
         private static final long serialVersionUID = -9161862898198550670L;
@@ -36,11 +46,6 @@ public class Main {
             final ScoreComponent comp = new ScoreComponent();
             add(comp);
             pack();
-            new Thread(() -> {
-                comp.repaint();
-                sleep();
-            }).start();
-            ;
         }
     }
 
@@ -63,7 +68,8 @@ public class Main {
         public void paint(Graphics g) {
             System.out.println("paint");
             Graphics2D g2 = (Graphics2D) g;
-            Line2D line = new java.awt.geom.Line2D.Double(50, new Random().nextInt(100), new Random().nextInt(100), new Random().nextInt(100));
+            Line2D line = new java.awt.geom.Line2D.Double(50, new Random().nextInt(100),
+                new Random().nextInt(100), new Random().nextInt(100));
             g2.draw(line);
             // QS_TODO
         }
