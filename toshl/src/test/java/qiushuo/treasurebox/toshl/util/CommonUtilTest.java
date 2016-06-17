@@ -40,4 +40,11 @@ public class CommonUtilTest extends AbstractToshlTest {
         Assert.assertEquals("ddd  e", CommonUtil.removePlaceHolder("ddd{中文}${def}e"));
         Assert.assertEquals("ddd $e f", CommonUtil.removePlaceHolder("ddd{中文}$e f"));
     }
+
+    @Test
+    public void convertDate() {
+        Assert.assertEquals("2016-01-01", CommonUtil.convertDate("1/1/16"));
+        Assert.assertEquals("2016-01-11", CommonUtil.convertDate("1/11/16"));
+        Assert.assertEquals("2000-11-11", CommonUtil.convertDate("11/11/00"));
+    }
 }

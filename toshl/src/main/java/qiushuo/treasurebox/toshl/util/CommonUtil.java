@@ -37,7 +37,7 @@ public class CommonUtil {
      * @param date "Jun 09, 2013"
      * @return "2013-06-09"
      */
-    public static String convertDate(String date) {
+    public static String convertDateHumanFormat(String date) {
         date = date.replace(",", "");
         String[] ss = date.split(" ");
         String day = ss[1];
@@ -71,6 +71,28 @@ public class CommonUtil {
         if (day.length() == 1) {
             day = "0" + day;
         }
+        return year + "-" + mon + "-" + day;
+    }
+
+    /**
+     * @param date "1/31/16"
+     * @return "2016-01-31"
+     */
+    public static String convertDate(String date) {
+        date = date.trim();
+        String[] ss = date.split("/");
+        String mon = ss[0];
+        String day = ss[1];
+        String year = ss[2];
+
+        year = "20" + year;
+        if (day.length() == 1) {
+            day = "0" + day;
+        }
+        if (mon.length() == 1) {
+            mon = "0" + mon;
+        }
+
         return year + "-" + mon + "-" + day;
     }
 
