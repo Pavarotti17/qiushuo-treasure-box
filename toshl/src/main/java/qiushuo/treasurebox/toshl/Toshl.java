@@ -32,7 +32,7 @@ public class Toshl {
     private static final String getToken() {
         try {
             return Files
-                .lines(Paths.get(URI.create("file:///Users/qiushuo/work/data/qiushuo/toshl_token")))
+                .lines(Paths.get(URI.create("file:///Users/shuo.qius/work/data/qiushuo/toshl_token")))
                 .collect(Collectors.toList()).get(0);
         } catch (Exception e) {
             logger.error(e);
@@ -45,9 +45,9 @@ public class Toshl {
      */
     public static void main(String[] args) throws Throwable {
         System.out
-            .println("enter toshl report cvs path: /Users/qiushuo/Downloads/toshl_export.csv ");
+            .println("enter toshl report cvs path: /Users/shuo.qius/Downloads/toshl_export.csv ");
         System.out
-            .println("enter toshl report cvs path: /Users/qiushuo/Downloads/toshl_export_hey.csv ");
+            .println("enter toshl report cvs path: /Users/shuo.qius/Downloads/toshl_export_hey.csv ");
         BufferedReader sin = new BufferedReader(new InputStreamReader(System.in));
         String path = sin.readLine().trim();
 
