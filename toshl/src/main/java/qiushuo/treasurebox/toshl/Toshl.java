@@ -6,9 +6,6 @@ package qiushuo.treasurebox.toshl;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,18 +24,19 @@ import qiushuo.treasurebox.toshl.mysql.DBOutput;
  */
 public class Toshl {
     private static final Logger logger = Logger.getLogger(Toshl.class);
-    private static final String TOKEN  = getToken();
 
-    private static final String getToken() {
-        try {
-            return Files
-                .lines(Paths.get(URI.create("file:///Users/shuo.qius/work/data/qiushuo/toshl_token")))
-                .collect(Collectors.toList()).get(0);
-        } catch (Exception e) {
-            logger.error(e);
-            return null;
-        }
-    }
+    //    private static final String TOKEN  = getToken();
+    //
+    //    private static final String getToken() {
+    //        try {
+    //            return Files
+    //                .lines(Paths.get(URI.create("file:///Users/shuo.qius/work/data/qiushuo/toshl_token")))
+    //                .collect(Collectors.toList()).get(0);
+    //        } catch (Exception e) {
+    //            logger.error(e);
+    //            return null;
+    //        }
+    //    }
 
     /**
      * @param args

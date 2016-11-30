@@ -7,10 +7,12 @@ package qiushuo.treasurebox.toshl.csv;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.Function;
 
 import qiushuo.treasurebox.toshl.Bill;
+import qiushuo.treasurebox.toshl.util.Constant;
 
 /**
  * 
@@ -57,6 +59,33 @@ public abstract class AbstractCsvMapper implements Function<List<String>, Bill> 
         return list;
     }
 
+    protected Collection<String> getSubTypesFromTag(Collection<String> tags) {
+        if (tags == null || tags.isEmpty())
+            throw new IllegalArgumentException("tags is null: " + tags);
+        boolean topped = false;
+        for (String t : tags) {
+            if (Constant.topType.contains(t)) {
+                topped = true;
+                break;
+            }
+        }
+        if (!topped) {
+            return Collections.emptySet();
+        }
+        Collection<String> set = new HashSet<String>(1);
+        for (String t : tags) {
+            char c = t.charAt(0);
+            if (c == '1') {
+                continue;
+            }
+            if (Constant.topType.contains(t)) {
+                continue;
+            }
+            set.add(t);
+        }
+        return set;
+    }
+
     /**
      * @param tags contains type and tag
      * @return {@link Bill#DEFAULT_TYPE} if no availvable type found
@@ -66,12 +95,19 @@ public abstract class AbstractCsvMapper implements Function<List<String>, Bill> 
             throw new IllegalArgumentException("tags is null: " + tags);
         String type = null;
         for (String t : tags) {
+            if (Constant.topType.contains(t)) {
+                return t;
+            }
+        }
+
+        for (String t : tags) {
             char c = t.charAt(0);
             if (c == '1') {
                 continue;
             }
-            if (type != null)
-                throw new IllegalArgumentException("tags contains duplicate type: " + tags);
+            if (type != null) {
+                throw new IllegalArgumentException("duplicate tag: " + tags);
+            }
             type = t;
         }
         if (type == null)

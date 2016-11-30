@@ -74,6 +74,7 @@ public class V2CsvMapper extends AbstractCsvMapper {
      */
     public void setTagType(Bill b, Collection<String> tagsStr, String typeStr) {
         b.setType(getType(tagsStr));
+        b.addExtraTags(getSubTypesFromTag(tagsStr));
         List<String> events = getTags(tagsStr);
         if (events.size() > 1)
             throw new IllegalArgumentException("event number bigger than 1: " + tagsStr);

@@ -5,6 +5,7 @@
 package qiushuo.treasurebox.toshl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -32,7 +33,7 @@ public class Bill {
     private String             account         = DEFAULT_ACCOUNT;
     private String             type;
     private Set<String>        tags            = new TreeSet<>();
-    private List<String>       extraTags       = new ArrayList<>(0);
+    private final List<String> extraTags       = new ArrayList<>(0);
     private String             desc;
 
     /**
@@ -158,7 +159,7 @@ public class Bill {
      * @param extraTags value to be assigned to property extraTags
      */
     public Bill setExtraTags(List<String> extraTags) {
-        this.extraTags = extraTags;
+        this.extraTags.addAll(extraTags);
         return this;
     }
 
@@ -166,10 +167,21 @@ public class Bill {
      * @param extraTag
      */
     public Bill addExtraTag(String extraTag) {
-        if (this.extraTags == null) {
-            this.extraTags = new ArrayList<>(1);
+        if (extraTags == null) {
+            return this;
         }
         this.extraTags.add(extraTag);
+        return this;
+    }
+
+    /**
+     * @param extraTags
+     */
+    public Bill addExtraTags(Collection<String> extraTags) {
+        if (extraTags == null || extraTags.isEmpty()) {
+            return this;
+        }
+        this.extraTags.addAll(extraTags);
         return this;
     }
 
