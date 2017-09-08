@@ -46,8 +46,11 @@ public class IOReaderTest extends AbstractToshlTest {
     @Test
     public void readCsv() throws Exception {
         List<List<String>> list = IOReader.readCsvFile("/testcsv.csv", true, 1);
-        Assert.assertEquals(2, list.size());
+        Assert.assertEquals(4, list.size());
         list.stream().forEach(l -> System.out.println(l));
         Assert.assertEquals("窗帘订金 尾款还有2980${窗帘}", list.get(1).get(list.get(1).size() - 1));
+        List<String> row3=list.get(2);
+        System.out.println(row3);
+        
     }
 }

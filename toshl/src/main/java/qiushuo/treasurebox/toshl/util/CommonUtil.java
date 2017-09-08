@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * 
  * @author shuo.qius
  * @version $Id: CommonUtil.java, v 0.1 Feb 29, 2016 5:35:17 PM qiushuo Exp $
  */
@@ -28,8 +27,8 @@ public class CommonUtil {
         if (line == null || line.isEmpty()) {
             return set;
         }
-        set.addAll(Arrays.asList(StringUtils.split(line, ',')).stream().map(s -> s.trim())
-            .collect(Collectors.toList()));
+        set.addAll(
+                Arrays.asList(StringUtils.split(line, ',')).stream().map(s -> s.trim()).collect(Collectors.toList()));
         return set;
     }
 
@@ -128,6 +127,14 @@ public class CommonUtil {
             long a = Long.parseLong(amt);
             return neg ? -a : a;
         }
+    }
+
+    public static String extractOnlyPlaceHolder(String str) {
+        List<String> list = extractPlaceHolder(str);
+        if (list == null || list.isEmpty()) {
+            return null;
+        }
+        return list.get(0);
     }
 
     /**

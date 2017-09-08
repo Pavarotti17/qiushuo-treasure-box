@@ -2,7 +2,7 @@
 bindir="$(dirname $0)"
 cd "$bindir"
 cd ../target
-$JAVA_HOME8/bin/java -cp toshl-1.0.0-jar-with-dependencies.jar qiushuo.treasurebox.toshl.Toshl
+$JAVA_HOME8/bin/java -cp toshl-1.0.0-jar-with-dependencies.jar qiushuo.treasurebox.toshl.Toshl2
 
 mysql -uroot -Dtoshl
 

@@ -25,8 +25,9 @@ public class V2CsvMapper extends AbstractCsvMapper {
     }
 
     /** 
-     * "Date",        "Account","Category","Tags", "Expense amount","Income amount","Currency","In main currency","Main currency","Description" <br/>
-     * "1/31/85", 现金,      Unsorted,  CE-Mac, 588.00,          0,              CNY,       588.00,            CNY,            电源线
+     * "Date",    "Account", "Category", "Tags",                   "Expense amount","Income amount","Currency","In main currency","Main currency","Description" <br/>
+     * "1/31/85", 现金,       Unsorted,   CE-Mac,                    588.00,          0,              CNY,       588.00,            CNY,            电源线
+     * 8/11/15,   现金,       unsorted,   "traffic-train, 150721_ER",296.00,          0,              CHF,      "1,897.44",         CNY,            回巴黎
      * 
      * @see qiushuo.treasurebox.toshl.csv.AbstractCsvMapper#applyInternal(java.util.List)
      */

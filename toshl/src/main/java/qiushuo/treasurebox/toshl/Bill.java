@@ -15,26 +15,25 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
 /**
- * 
  * @author shuo.qius
  * @version $Id: Bill.java, v 0.1 Feb 29, 2016 5:34:00 PM qiushuo Exp $
  */
 public class Bill {
     public static final String DEFAULT_ACCOUNT = "cash";
-    public static final String DEFAULT_TYPE    = "default";
-
-    private final boolean      hey;
+    public static final String DEFAULT_TYPE = "default";
+    
+    private final boolean hey;
     /** format e.g. <code>"20140904AKX9E1WP"</code> */
-    private final String       billId;
+    private final String billId;
     /** format e.g. <code>"2014-09-04"</code> */
-    private final String       gmt;
+    private final String gmt;
     /** negative number for expense, positive number for income */
-    private long               amount;
-    private String             account         = DEFAULT_ACCOUNT;
-    private String             type;
-    private Set<String>        tags            = new TreeSet<>();
-    private final List<String> extraTags       = new ArrayList<>(0);
-    private String             desc;
+    private long amount;
+    private String account = DEFAULT_ACCOUNT;
+    private String type;
+    private Set<String> tags = new TreeSet<>();
+    private final List<String> extraTags = new ArrayList<>(0);
+    private String desc;
 
     /**
      * @param gmt "yyyy-MM-dd"
@@ -94,7 +93,7 @@ public class Bill {
         return sb.toString();
     }
 
-    /** 
+    /**
      * @see java.lang.Object#toString()
      */
     @Override

@@ -1,18 +1,18 @@
-<?xml version="1.0" encoding="GBK"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
     <!-- ===================================================================== -->
     <!-- Appenders -->
     <!-- ===================================================================== -->
 
     <appender name="STDOUT-APPENDER" class="org.apache.log4j.ConsoleAppender">
-        <param name="encoding" value="GBK" />
+        <param name="encoding" value="UTF-8" />
         <param name="target" value="System.out" />
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d [%c{2}] %m%n" />
         </layout>
     </appender>
     <appender name="STDERR-APPENDER" class="org.apache.log4j.ConsoleAppender">
-        <param name="encoding" value="GBK" />
+        <param name="encoding" value="UTF-8" />
         <param name="target" value="System.err" />
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d [%c{2}] %m%n" />

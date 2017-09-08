@@ -17,16 +17,15 @@ import org.apache.log4j.Logger;
 import qiushuo.treasurebox.toshl.Bill;
 
 /**
- * 
  * @author shuo.qius
  * @version $Id: DBOutput.java, v 0.1 Feb 29, 2016 9:47:50 PM qiushuo Exp $
  */
 public class DBOutput {
-    private static final Logger logger      = Logger.getLogger(DBOutput.class);
+    private static final Logger logger = Logger.getLogger(DBOutput.class);
     /** every bill can has maximunly {@value #MAX_TAG} tags */
-    public static final String  DB_URL      = "jdbc:mysql://127.0.0.1:3306/toshl?characterEncoding=utf8";
-    public static final String  DB_USER     = "root";
-    public static final String  DB_PASSWORD = "";
+    public static final String DB_URL = "jdbc:mysql://127.0.0.1:3306/toshl?characterEncoding=utf8";
+    public static final String DB_USER = "root";
+    public static final String DB_PASSWORD = "";
     static {
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -66,15 +65,22 @@ public class DBOutput {
             int row = 0;
             for (Bill b : list) {
                 row += sqlWrite(
-                    conn,
-                    "INSERT INTO bill (ID,SRC,GMT,AMOUNT,AMOUNT_DESP,`TYPE`,`EVENT`,SUB_TYPE,INFO,EXT_INFO) VALUES (?,?,?,?,?,?,?,?,?,?)",
-                    Arrays.asList(b.getBillId(), b.isHey() ? "hey" : "we", b.getGmt(),
-                        b.getAmount(), String.valueOf(b.getAmount() * 0.01d), b.getType(),
-                        b.getOnlyTag(), b.getOnlyExtraTag(), b.getDesc(), null));
+                        conn,
+                        "INSERT INTO bill (ID,SRC,GMT,AMOUNT,AMOUNT_DESP,`TYPE`,`EVENT`,SUB_TYPE,INFO,EXT_INFO) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                        Arrays.asList(
+                                b.getBillId(),
+                                b.isHey() ? "hey" : "we",
+                                b.getGmt(),
+                                b.getAmount(),
+                                String.valueOf(b.getAmount() * 0.01d),
+                                b.getType(),
+                                b.getOnlyTag(),
+                                b.getOnlyExtraTag(),
+                                b.getDesc(),
+                                null));
             }
             if (row != list.size()) {
-                logger.error("inserted_rows(" + row + ") != list_size(" + list.size()
-                             + "), import inconsistently");
+                logger.error("inserted_rows(" + row + ") != list_size(" + list.size() + "), import inconsistently");
             } else {
                 logger.info("import successful");
             }
@@ -115,8 +121,11 @@ public class DBOutput {
         }
     }
 
-    private static Connection createConn(String url, String user, String password)
-                                                                                  throws SQLException {
+    public static Connection createConn() throws SQLException {
+        return createConn(DB_URL, DB_USER, DB_PASSWORD);
+    }
+
+    public static Connection createConn(String url, String user, String password) throws SQLException {
         return DriverManager.getConnection(url, user, password);
     }
 }
