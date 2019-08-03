@@ -5,8 +5,8 @@ import java.util.List;
 public class RSU {
 
     private static final PriceEst[] priceEst = new PriceEst[] { //.... 
-            new PriceEst("2015-07-10", 70.43d), new PriceEst("2016-04-15", 95.88d), new PriceEst("2017-04-15", 95.88),
-            new PriceEst("2018-04-15", 95.88) };
+            new PriceEst("2015-07-10", 70.43d), new PriceEst("2016-04-15", 120.88d), new PriceEst("2017-04-15", 120.88),
+            new PriceEst("2018-04-15", 120.88) };
 
     private static final double taxOnDebt = 230000d;
 
@@ -31,15 +31,17 @@ public class RSU {
                                              .addShare(new GrantShare("2018-04-01", 2500))
                                              .addShare(new GrantShare("2019-04-01", 2500)));
 
-        list.add(new Grant(35d, 6300, 0).addShare(new GrantShare("2017-04-01", 1575))
-                                        .addShare(new GrantShare("2018-04-01", 1575))
-                                        .addShare(new GrantShare("2019-04-01", 1575))
-                                        .addShare(new GrantShare("2020-04-01", 1575)));
+        list.add(
+                new Grant(35d, 6300, 0).addShare(new GrantShare("2017-04-01", 1575))
+                                       .addShare(new GrantShare("2018-04-01", 1575))
+                                       .addShare(new GrantShare("2019-04-01", 1575))
+                                       .addShare(new GrantShare("2020-04-01", 1575)));
 
-        list.add(new Grant(48d, 6300, 0).addShare(new GrantShare("2018-04-01", 2750))
-                                        .addShare(new GrantShare("2019-04-01", 2750))
-                                        .addShare(new GrantShare("2020-04-01", 2750))
-                                        .addShare(new GrantShare("2021-04-01", 2750)));
+        list.add(
+                new Grant(48d, 6300, 0).addShare(new GrantShare("2018-04-01", 2750))
+                                       .addShare(new GrantShare("2019-04-01", 2750))
+                                       .addShare(new GrantShare("2020-04-01", 2750))
+                                       .addShare(new GrantShare("2021-04-01", 2750)));
 
         System.out.println("last price: " + priceEst[priceEst.length - 1].price);
         //        String targetDate="2019-04-16";
@@ -53,8 +55,7 @@ public class RSU {
 
             System.out.println(
                     targetDate + ": " + Math.round(gain / 10000d) + " = " + Math.round(price / 10000d) + " - "
-                            + Math.round(
-                                    tax / 10000d));
+                            + Math.round(tax / 10000d));
         }
 
     }
