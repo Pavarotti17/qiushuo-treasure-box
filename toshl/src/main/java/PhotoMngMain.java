@@ -30,12 +30,26 @@ public class PhotoMngMain {
 
     private static final Set<String> excludeSuffix = new HashSet<>(Arrays.asList(".aae", ".ithmb", ".txt"));
 
+//    public static void main(String[] args) throws Throwable{
+//        File dir=new File("/Users/shuo.qius/Pictures/qiuxm/2020_三亚/untitled folder/0");
+//        int i=0;
+//        
+//        for(File f:dir.listFiles()){
+////            System.out.println(f.getAbsolutePath());
+//            String name=f.getName();
+//            System.out.println(name);
+//            f.renameTo(new File(dir,(System.currentTimeMillis())+"_"+(++i)+".JPG"));
+//        }
+//    }
+    
     public static void main(String[] args) throws Throwable {
 
-        final String fromDir = "/Users/shuo.qius/Pictures/wendy_bak/Photos/life";
-        final String to__Dir = "/Users/shuo.qius/Pictures/input_iphone_wlm";
+//        final String fromDir = "/Users/shuo.qius/temp/temp_qs";
+//        final String to__Dir = "/Users/shuo.qius/Pictures/input_iphone_qs";
+        final String fromDir = "/Users/shuo.qius/temp/temp_qs";
+        final String to__Dir = "/Users/shuo.qius/Pictures/input_iphone_qs";
 
-        final String startFrom = "1980-01-01";
+        final String startFrom = "2020-04-21";
 
         organize(fromDir, to__Dir, startFrom);
     }
